@@ -133,8 +133,12 @@ async function getRegistrations(req, res) {
 async function getViolations(req, res) {
   let conn;
     try{
-        conn = await pool.getConnection();
-        const violations = await conn.query('SELECT * FROM violation');
+        conn = await pool.getConnection();      // added this para makita yung violation_type
+        const violations = await conn.query(`   
+            SELECT v.*, vt.violation_type 
+            FROM violation v
+            LEFT JOIN violation_type vt ON v.violation_id = vt.violation_id
+        `);
         res.json(violations);
     } catch (err) {
         console.error('Error fetching violations:', err);

@@ -10,6 +10,7 @@ const FETCHERS = {
   violation: getViolations
 };
 
+// Navigation tab
 const NAV_ITEMS = [
   { key: 'driver',       label: 'Drivers'      },
   { key: 'vehicle',      label: 'Vehicles'     },
@@ -21,31 +22,25 @@ const COLUMNS = {
   driver:       ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'address'],
   vehicle:      ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
   registration: ['registration_number', 'registration_date', 'expiration_date', 'registration_status'],
-  violation:    ['violation_id', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
+  violation:    ['violation_id', 'violation_type', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
 };
 
 const LABELS = {
-  license_number: 'License No.',      full_name: 'Full Name',       sex: 'Sex',
-  date_of_birth: 'Date of Birth',     license_type: 'License Type', license_expiration: 'Expiration Date',
-  address: 'Address',                 plate_number: 'Plate No.',    make: 'Make',
-  model: 'Model',                     year_of_manufacture: 'Year',  color: 'Color',
-  vehicle_type: 'Type',               engine_number: 'Engine No.',  chassis_number: 'Chassis No.',
+  license_number: 'License No.',      full_name: 'Full Name',           sex: 'Sex',
+  date_of_birth: 'Date of Birth',     license_type: 'License Type',     license_expiration: 'Expiration Date',
+  address: 'Address',                 plate_number: 'Plate No.',        make: 'Make',
+  model: 'Model',                     year_of_manufacture: 'Year',      color: 'Color',
+  vehicle_type: 'Vehicle Type',       engine_number: 'Engine No.',      chassis_number: 'Chassis No.',
   registration_number: 'Reg. No.',    registration_date: 'Date Registered',
-  expiration_date: 'Expiration Date', registration_status: 'Status',
+  expiration_date: 'Expiration Date', registration_status: 'Registration Status',
   violation_id: 'ID',                 date_and_location: 'Date & Location',
-  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',   violation_status: 'Status',
-  license_status: 'Status',
+  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',       violation_status: 'Violation Status',
+  license_status: 'License Status',   violation_type: 'Violation Type',
 };
 
 const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
 
-function StatusBadge({ value }) {
-  const v = String(value).toLowerCase();
-  const type = (v === 'active' || v === 'paid') ? 'green'
-    : (v === 'expired' || v === 'unpaid') ? 'red' : 'gray';
-  return <span className={`badge badge--${type}`}>{value}</span>;
-}
-
+// Fetches and displays the data table for the currently selected tab
 function DataTable({ table }) {
   const cols = COLUMNS[table];
   const [rows, setRows] = useState([]);
@@ -64,6 +59,7 @@ function DataTable({ table }) {
     <div className="table-wrap">
       <table>
         <thead>
+          {/* Render column headers using LABELS, fallback to raw key if label is missing */}
           <tr>{cols.map(col => <th key={col}>{LABELS[col] || col}</th>)}</tr>
         </thead>
         <tbody>
@@ -73,11 +69,17 @@ function DataTable({ table }) {
               <tr key={i}>
                 {cols.map(col => (
                   <td key={col}>
+                    {/* Render status columns as plain text */}
                     {STATUS_KEYS.includes(col)
-                      ? <StatusBadge value={row[col]} />
+                      ? row[col]
+                      // Format fine_amount as Philippine Peso currency
                       : col === 'fine_amount'
-                        ? `₱${Number(row[col]).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
-                        : row[col] ?? '—'}
+                        ? `₱${Number(row[col]).toLocaleString('en-PH')}`
+                        // If the value is an ISO date string (contains 'T'), slice to YYYY-MM-DD
+                        : typeof row[col] === 'string' && row[col].includes('T')
+                          ? row[col].slice(0, 10)
+                          // display the value as-is, or '-' if null/undefined
+                          : row[col] ?? '-'}
                   </td>
                 ))}
               </tr>
@@ -89,11 +91,12 @@ function DataTable({ table }) {
 }
 
 export default function App() {
-  const [active, setActive] = useState('driver');
+  const [active, setActive] = useState('driver'); // default tab on page load
   const current = NAV_ITEMS.find(n => n.key === active);
-
+ 
   return (
     <div className="app">
+      {/* Top navigation bar with LTO branding and tab buttons */}
       <header className="topbar">
         <div className="topbar-left">
           <div className="brand-mark">LTO</div>
@@ -114,7 +117,8 @@ export default function App() {
           ))}
         </nav>
       </header>
-
+ 
+      {/* Main content area, page title and the data table */}
       <main className="main">
         <div className="page-header">
           <div>
@@ -122,7 +126,7 @@ export default function App() {
             <p className="page-sub">{current.label} records from the LTO database</p>
           </div>
         </div>
-
+ 
         <div className="table-card">
           <DataTable table={active} />
         </div>
@@ -130,6 +134,3 @@ export default function App() {
     </div>
   );
 }
-
-
-
