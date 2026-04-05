@@ -18,14 +18,14 @@ const NAV_ITEMS = [
 ];
 
 const COLUMNS = {
-  driver:       ['licence_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_expiration', 'address'],
+  driver:       ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'address'],
   vehicle:      ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
   registration: ['registration_number', 'registration_date', 'expiration_date', 'registration_status'],
   violation:    ['violation_id', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
 };
 
 const LABELS = {
-  licence_number: 'Licence No.',      full_name: 'Full Name',       sex: 'Sex',
+  license_number: 'License No.',      full_name: 'Full Name',       sex: 'Sex',
   date_of_birth: 'Date of Birth',     license_type: 'License Type', license_expiration: 'Expiration Date',
   address: 'Address',                 plate_number: 'Plate No.',    make: 'Make',
   model: 'Model',                     year_of_manufacture: 'Year',  color: 'Color',
@@ -34,9 +34,10 @@ const LABELS = {
   expiration_date: 'Expiration Date', registration_status: 'Status',
   violation_id: 'ID',                 date_and_location: 'Date & Location',
   apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',   violation_status: 'Status',
+  license_status: 'Status',
 };
 
-const STATUS_KEYS = ['registration_status', 'violation_status'];
+const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
 
 function StatusBadge({ value }) {
   const v = String(value).toLowerCase();

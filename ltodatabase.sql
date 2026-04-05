@@ -5,7 +5,7 @@ USE ltodatabase;
 CREATE TABLE driver (
     license_number VARCHAR(20) PRIMARY KEY,
     license_type VARCHAR(20),
-    lincense_status VARCHAR(20),
+    license_status VARCHAR(20),     -- inedit ko lang typo ksi, lincense_status
     license_expiration DATE,
     license_issuance DATE,
     full_name VARCHAR(100),
