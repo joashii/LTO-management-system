@@ -19,24 +19,6 @@ router.get('/api/', (req, res) => {
     res.send('Server is running');
 });
 
-// User routes
-router.get('/api/users', async (req, res) => {
-    controller.getUsers(req, res);
-});
-
-router.post('/api/users', async (req, res) => {
-    controller.addUser(req, res);
-});
-
-router.delete('/api/users/:id', async (req, res) => {
-    controller.deleteUser(req, res);
-});
-
-router.put('/api/users/:id', async (req, res) => {
-    controller.updateUser(req, res);
-});
-
-
 // CRUD routes for drivers, vehicles, registrations, and violations
 
 router.get('/api/drivers', async (req, res) => {

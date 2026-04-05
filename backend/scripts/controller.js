@@ -8,6 +8,8 @@
 
 import pool from './db.js';
 
+// Sample functions to use as basis for CRUD operations
+
 // get all users
 async function getUsers(req, res) {
     let conn;
@@ -101,15 +103,45 @@ async function getDrivers(req, res) {
 };
 
 async function getVehicles(req, res) {
-    return;
+    let conn;
+    try{
+        conn = await pool.getConnection();
+        const vehicles = await conn.query('SELECT * FROM vehicle');
+        res.json(vehicles);
+    } catch (err) {
+        console.error('Error fetching vehicles:', err);
+        res.status(500).json({ error: 'Failed to fetch vehicles' });
+    } finally {
+        if (conn) conn.release();
+    }
 }
 
 async function getRegistrations(req, res) {
-    return;
+    let conn;
+    try{
+        conn = await pool.getConnection();
+        const registrations = await conn.query('SELECT * FROM registration');
+        res.json(registrations);
+    } catch (err) {
+        console.error('Error fetching registrations:', err);
+        res.status(500).json({ error: 'Failed to fetch registrations' });
+    } finally {
+        if (conn) conn.release();
+    }
 };
 
 async function getViolations(req, res) {
-    return;
+  let conn;
+    try{
+        conn = await pool.getConnection();
+        const violations = await conn.query('SELECT * FROM violation');
+        res.json(violations);
+    } catch (err) {
+        console.error('Error fetching violations:', err);
+        res.status(500).json({ error: 'Failed to fetch violations' });
+    } finally {
+        if (conn) conn.release();
+    }
 };
 
 export default {
