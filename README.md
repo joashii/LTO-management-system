@@ -27,9 +27,9 @@ This project demonstrates basic CRUD (Create, Read, Update, Delete) operations w
 ```
 LTO-management-system/
 │
-├── frontend/        # React app
-├── backend/         # Express server
-├── data.sql         # Database setup file
+├── frontend/            # React app
+├── backend/             # Express server
+├── ltodatabase.sql      # Database setup file
 ```
 
 ---
@@ -52,26 +52,29 @@ Make sure MariaDB is installed and running.
 Run:
 
 ```
-mysql -u root -p < data.sql
+mysql -u root -p
+SOURCE ltodatabase.sql
+...or simply...
+mysql -u root -p < ltodatabase.sql
 ```
 
 This will create:
 
-* database: `testdb`
+* database: `ltodatabase`
 * table: `users`
 
 ---
 
 ### 3. Configure Environment Variables
 
-Go to the `backend` folder and create a `.env` file:
+Go to the `backend/scripts` folder and create a `.env` file:
 
 ```
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password_here
-DB_NAME=testdb
+DB_NAME=ltodatabase
 ```
 
 ---
@@ -99,7 +102,7 @@ npm install
 #### Start backend
 
 ```
-cd backend
+cd backend/scripts
 node server.js
 ```
 
