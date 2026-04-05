@@ -16,6 +16,6 @@ app.use(cors({
 app.use(express.json());
 app.use(route)
 
-app.listen(5000, () => {
+app.listen(3001, () => {
   console.log('Server running on http://localhost:3001');
 });
