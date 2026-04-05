@@ -1,4 +1,8 @@
-import { get } from "needle";
+// api.js
+/*
+    This file contains functions that make API calls to the backend server.
+    Each function corresponds to a specific API endpoint defined in router.js.
+*/
 
 const BASE_URL = '/api';
 
@@ -32,7 +36,7 @@ export async function updateUser(id, name, age) {
     return response.json();
 }
 
-// Temp
+// CRUD functions for drivers, vehicles, registrations, and violations
 export async function getDrivers() {
     const res = await fetch(`${BASE_URL}/drivers`);
     return res.json()

@@ -2,7 +2,8 @@
 /*
     has all the server routes, and calls the appropriate functions in controller.js
 
-    !! When adding a new route:
+    !! 
+        When adding a new route:
         prefix with /api/
         import it in controller.js
     !!
@@ -13,10 +14,12 @@ import controller from './controller.js';
 
 const router = express.Router();
 
+// Test route
 router.get('/api/', (req, res) => {
     res.send('Server is running');
 });
 
+// User routes
 router.get('/api/users', async (req, res) => {
     controller.getUsers(req, res);
 });
@@ -32,6 +35,9 @@ router.delete('/api/users/:id', async (req, res) => {
 router.put('/api/users/:id', async (req, res) => {
     controller.updateUser(req, res);
 });
+
+
+// CRUD routes for drivers, vehicles, registrations, and violations
 
 router.get('/api/drivers', async (req, res) => {
     controller.getDrivers(req, res);

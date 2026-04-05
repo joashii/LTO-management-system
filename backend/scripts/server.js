@@ -1,9 +1,7 @@
 // server.js
 /*
-
-
+  The root of the web application's backend. It sets up the Express server.
 */
-
 
 import "dotenv/config";
 import express from 'express';
@@ -18,6 +16,6 @@ app.use(cors({
 app.use(express.json());
 app.use(route)
 
-app.listen(3001, () => {
+app.listen(5000, () => {
   console.log('Server running on http://localhost:3001');
 });
