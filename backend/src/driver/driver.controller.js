@@ -111,3 +111,8 @@ export const deleteDriver = async (req, res) => {
         if (conn) conn.release();
     }
 }
+
+// Link license number, to Vehicle PK
+// If driver is deleted/updated....
+export const driverOwns = async (req, res) => {
+}

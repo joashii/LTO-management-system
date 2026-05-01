@@ -98,3 +98,18 @@ export const deleteViolation = async (req, res) => {
         if (conn) conn.release();
     }
 }  
+
+// If vehicle is deleted/updated....
+
+
+// Link Violation with Vehicle PK
+export const involvedIn = async (req, res) => {
+}
+
+// link different types of violations with one violation ID
+export const violationType = async (req, res) => {
+}
+
+// link violation with registration number
+export const registrationCommits = async (req, res) => {
+}

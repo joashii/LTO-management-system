@@ -108,3 +108,9 @@ export const deleteVehicle = async (req, res) => {
         if (conn) conn.release();
     }
 }
+
+// Link Vehicle PK, to registration number
+// If vehicle is deleted/updated....
+
+export const vehicleHas = async (req, res) => {
+}
