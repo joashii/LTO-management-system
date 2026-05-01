@@ -1,0 +1,214 @@
+/* Sidebar Wrapper */
+.sidebar {
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding: 24px 0;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Icon Rail */
+.rail-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.12s;
+  position: relative;
+  z-index: 2;
+}
+
+.rail-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.rail-icon--active {
+  background: rgb(255, 255, 255);
+  color: #ffffff;
+}
+
+.rail-logout {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.rail-logout-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+  z-index: 2;
+}
+
+.rail-logout-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.rail-logout-btn:hover {
+  background: var(--red-bg);
+  color: var(--red-text);
+}
+
+/* Curved SVG Shape */
+.sidebar-curve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 65px;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sidebar-curve svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Label Panel */
+.sidebar-labels {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  align-items: center;
+}
+
+.label-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 0;
+  gap: 3px;
+  text-align: center;
+}
+
+.label-brand-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.label-brand-sub {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.label-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 0;
+  justify-content: center;
+  flex: 1;
+  position: relative;
+}
+
+.label-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap:30px;
+  padding: 10px 10px;
+  border: none;
+  background: transparent;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius);
+  transition: color 0.12s;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.label-item:hover {
+  color: var(--accent-text);
+}
+
+.label-item--active {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.label-logout {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.label-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  border-radius: var(--radius);
+  width: 100%;
+  transition: color 0.12s;
+}
+
+.label-logout-btn svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-2);
+}
+
+.label-logout-btn:hover {
+  color: var(--red-text);
+}
+
+.label-item-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  transition: background 0.12s, color 0.12s;
+  color: rgb(255, 229, 229);
+}
+
+.label-item-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.label-item--active .label-item-icon {
+  background: rgba(255, 255, 255, 0.929);
+  color: var(--accent-text);
+}
+

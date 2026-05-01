@@ -1,0 +1,101 @@
+/* Banner */
+.banner {
+  background: var(--banner-bg);
+  border-radius: var(--radius-xl);
+  padding: 36px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+  min-height: 180px;
+}
+
+/* Left: Text Content */
+.banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1;
+  max-width: 55%;
+}
+
+.banner-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.banner-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.banner-description {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.80);
+  line-height: 1.7;
+  margin-top: 2px;
+}
+
+/* Right: Illustration */
+.banner-image {
+  position: absolute;
+  right: 44px;
+  bottom: 0;
+  height: 185px;
+  object-fit: contain;
+  z-index: 1;
+}
+
+/* Placeholder (no image yet) */
+.banner-image-placeholder {
+  position: absolute;
+  right: 44px;
+  bottom: 0;
+  width: 160px;
+  height: 185px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.banner-image-placeholder span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  padding: 0 12px;
+  line-height: 1.5;
+}
+
+/* Decorative background circle */
+.banner::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  top: -80px;
+  right: 160px;
+  z-index: 0;
+}
+
+.banner::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  bottom: -60px;
+  right: 60px;
+  z-index: 0;
+}
