@@ -4,11 +4,11 @@ const router = Router();
 
 
 router.get('/', getVehicles);
-router.get('/:id', getVehicleById);
+router.get('/:plate_number/:engine_number/:chassis_number', getVehicleById);
 
 router.post('/', createVehicle);
-router.put('/:id', updateVehicle);
-router.delete('/:id', deleteVehicle);
+router.put('/', updateVehicle);
+router.delete('/:plate_number/:engine_number/:chassis_number', deleteVehicle);
 
 
 export default router;

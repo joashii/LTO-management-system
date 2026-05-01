@@ -1,17 +1,17 @@
 import { Router } from 'express';
-import {  } from './driver.controller';
+import { getDrivers, getDriverById, createDriver, updateDriver, deleteDriver } from './driver.controller.js';
 const router = Router();
 
 
-router.get('/', getProducts);
+router.get('/', getDrivers);
 
-router.get('/:id', getProductById);
+router.get('/:license_number', getDriverById);
 
 // ADMIN ROUTES
 
-router.post('/', authenticateToken, authorizeAdmin, createProduct);
-router.put('/:id', authenticateToken, authorizeAdmin, updateProduct);
-router.delete('/:id', authenticateToken, authorizeAdmin, deleteProduct);
+router.post('/', createDriver);
+router.put('/:license_number', updateDriver);
+router.delete('/:license_number', deleteDriver);
 
 
 export default router;

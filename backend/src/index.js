@@ -6,7 +6,6 @@
 import "dotenv/config";
 import express from 'express';
 import cors from 'cors';
-import route from './router.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -15,17 +14,16 @@ app.use(cors({
   origin: 'http://localhost:5173' // allow requests from the frontend (5173 vite default port)
 }));
 app.use(express.json());
-app.use(route);
 
 import driverRoutes from './driver/driver.router.js';
-import registrationRoutes from './registration/registration.router.js';
-import vehicleRoutes from './vehicle/vehicle.router.js';
-import violationRoutes from './violation/violation.router.js';
+// import registrationRoutes from './registration/registration.router.js';
+// import vehicleRoutes from './vehicle/vehicle.router.js';
+// import violationRoutes from './violation/violation.router.js';
 
-app.use('/api/driver', driverRoutes);
-app.use('/api/registration', registrationRoutes);
-app.use('/api/vehicle', vehicleRoutes);
-app.use('/api/violation', violationRoutes);
+app.use('/api/drivers', driverRoutes);
+// app.use('/api/registration', registrationRoutes);
+// app.use('/api/vehicle', vehicleRoutes);
+// app.use('/api/violation', violationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend is up and running!' });
