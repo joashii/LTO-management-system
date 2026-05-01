@@ -1,0 +1,174 @@
+/* Overlay */
+.form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 16, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+/* Form Card */
+.form {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(26, 18, 16, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Gradient Header */
+.form-header {
+  background: linear-gradient(160deg, #CA3B2F 0%, #E15A38 100%);
+  padding: 24px 28px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.form-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.form-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.12s;
+  flex-shrink: 0;
+}
+
+.form-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Form Body */
+.form-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* Form Fields */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-2);
+}
+
+.form-input,
+.form-select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid var(--border-md);
+  border-radius: var(--radius);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.12s;
+  width: 100%;
+}
+
+.form-input::placeholder {
+  color: var(--text-3);
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--accent);
+}
+
+/* Two column grid for shorter fields */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Form Footer */
+.form-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1.5px solid var(--border-md);
+  background: transparent;
+  color: var(--text-2);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.btn-cancel:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Gradient primary button */
+.btn-submit {
+  padding: 10px 24px;
+  border: none;
+  background: linear-gradient(135deg, #CA3B2F 0%, #E15A38 100%);
+  color: #ffffff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.12s;
+}
+
+.btn-submit:hover {
+  opacity: 0.90;
+  transform: translateY(-1px);
+}
