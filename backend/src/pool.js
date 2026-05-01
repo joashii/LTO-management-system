@@ -4,6 +4,7 @@
   simple database connection pool using mariadb. 
   It reads the database connection details from environment variables defined in .env
 */
+
 import { createPool } from 'mariadb';
 import 'dotenv/config';
 
