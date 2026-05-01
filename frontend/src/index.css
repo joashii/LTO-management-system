@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* Global Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Color Palette */
+:root {
+  /* Backgrounds */
+  --bg:             #FAF7F5;       /* warm cream — app background */
+  --surface:        #FFFFFF;       /* white - cards, table rows   */
+
+  /* Sidebar */
+  --sidebar-bg:     #FAF7F5;       /* same cream as background    */
+  --sidebar-border: #EDE8E4;       /* subtle warm border          */
+
+  /* Banner */
+  --banner-bg:        #C8392B;       /* warm red                    */
+  --banner-bg-dark:   #A52D21;       /* darker red for depth        */
+
+  /* Accent / brand */
+  --accent:         #E8450A;       /* orange-red — buttons, icons */
+  --accent-light:   #FDEAE6;       /* salmon — active nav bg      */
+  --accent-text:    #C8392B;       /* red — active nav text       */
+
+  /* Text */
+  --text:           #1A1210;       /* near-black warm text        */
+  --text-2:         #7A6A63;       /* muted warm gray             */
+  --text-3:         #B0A09A;       /* lighter muted               */
+
+  /* Borders */
+  --border:         #EDE8E4;       /* warm light border           */
+  --border-md:      #D9D0CA;       /* slightly stronger border    */
+
+  /* Status colors */
+  --green-bg:       #EDFAF3;
+  --green-text:     #166534;
+  --red-bg:         #FEF2F2;
+  --red-text:       #991B1B;
+  --yellow-bg:      #FFFBEB;
+  --yellow-text:    #92400E;
+  --gray-bg:        #F4F3F1;
+  --gray-text:      #4B4540;
+
+  /* Border radius */
+  --radius-sm:      4px;
+  --radius:         8px;
+  --radius-lg:      12px;
+  --radius-xl:      16px;
+
+  /* Sidebar width */
+  --sidebar-w:      220px;
+}
+
+/* Base */
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
