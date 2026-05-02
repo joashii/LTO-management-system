@@ -114,5 +114,18 @@ export const deleteDriver = async (req, res) => {
 
 // Link license number, to Vehicle PK
 // If driver is deleted/updated....
-export const driverOwns = async (req, res) => {
+export const driverOwns = async (license_number, plate_number, engine_number, chassis_number) => {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        await conn.query(
+            'INSERT INTO driver_owns (license_number, plate_number, engine_number, chassis_number) VALUES (?, ?, ?, ?)',
+            [license_number, plate_number, engine_number, chassis_number]
+        );
+    } catch (err) {
+        console.error('Error linking driver to vehicle:', err);
+    } finally {
+        if (conn) conn.release();
+    }
+
 }

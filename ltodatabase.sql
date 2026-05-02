@@ -11,7 +11,7 @@ CREATE TABLE driver (
     full_name VARCHAR(100),
     sex VARCHAR(10),
     date_of_birth DATE,
-    address VARCHAR(100)
+    driver_address VARCHAR(100)
 );
 
 CREATE TABLE registration (
@@ -33,8 +33,8 @@ CREATE TABLE vehicle (
     license_number VARCHAR(20),
     registration_number VARCHAR(20),
     PRIMARY KEY (plate_number, engine_number, chassis_number),
-    FOREIGN KEY (license_number) REFERENCES driver(license_number),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number)
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE,
 );
 
 CREATE TABLE driver_owns (
@@ -43,8 +43,8 @@ CREATE TABLE driver_owns (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (license_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY(license_number) REFERENCES driver(license_number),
-    FOREIGN KEY(plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number,  chassis_number)
+    FOREIGN KEY(license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY(plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number,  chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
 );  
 
 CREATE TABLE vehicle_has (
@@ -53,53 +53,52 @@ CREATE TABLE vehicle_has (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (registration_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number),
-    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number)
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE, 
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE involved_in (
-    violation_date DATE,        -- separated date_and_location VARCHAR(100)
-    location VARCHAR(100),
+    violation_id INT,
     plate_number VARCHAR(20),
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
-    PRIMARY KEY (violation_date, location, plate_number, engine_number, chassis_number),
-    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number)
+    PRIMARY KEY (violation_id, plate_number, engine_number, chassis_number),
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE violation (
     violation_id INT AUTO_INCREMENT PRIMARY KEY,
-    violation_date DATE,        -- separated date_and_location VARCHAR(100)
-    location VARCHAR(100),
+    violation_date DATE,
+    violation_location VARCHAR(100),
     violation_status VARCHAR(20),
     fine_amount DECIMAL(10, 2),
     apprehending_officer VARCHAR(100),
     license_number VARCHAR(20),
     registration_number VARCHAR(20),
-    FOREIGN KEY (license_number) REFERENCES driver(license_number),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number)
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE violation_type (
     violation_id INT,
     violation_type VARCHAR(50),
     PRIMARY KEY(violation_id, violation_type),
-    foreign key(violation_id) references violation(violation_id)
+    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE registration_history (
     registration_number VARCHAR(20),
     history_date DATE,                 
     PRIMARY KEY (registration_number, history_date),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number)
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE registration_commits (
-    registration_number VARCHAR(20),   -- add this
-    violation_id INT,                  -- add this
-    PRIMARY KEY (registration_number, violation_id),  -- add this
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number),
-    FOREIGN KEY (violation_id) REFERENCES violation(violation_id)
+    registration_number VARCHAR(20),   
+    violation_id INT,                  
+    PRIMARY KEY (registration_number, violation_id),  
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 

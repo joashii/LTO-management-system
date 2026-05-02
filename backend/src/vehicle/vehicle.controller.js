@@ -109,8 +109,22 @@ export const deleteVehicle = async (req, res) => {
     }
 }
 
+// TODO : ADD TO CREATE FUNCTION 
+
 // Link Vehicle PK, to registration number
 // If vehicle is deleted/updated....
 
-export const vehicleHas = async (req, res) => {
+export const vehicleHas = async (registration_number, plate_number, engine_number, engine_number, chassis_number) => {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        await conn.query(
+            'INSERT INTO vehicle_has (registration_number, plate_number, engine_number, chassis_number) VALUES (?, ?, ?, ?)',
+            [registration_number, plate_number, engine_number, chassis_number]
+        );
+    } catch (err) {
+        console.error('Error linking vehicle to registration:', err);
+    } finally {
+        if (conn) conn.release();
+    }
 }

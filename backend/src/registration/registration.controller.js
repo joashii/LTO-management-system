@@ -97,3 +97,26 @@ export const deleteRegistration = async (req, res) => {
         if (conn) conn.release();
     }
 }
+
+// TODO : LINK THIS TO THE VIOLATION TABLE. WHEN A REGISTRATION IS MADE, IT SHOULD ALSO CHECK FOR ANY VIOLATIONS ASSOCIATED WITH THE VEHICLE AND DRIVER AND LINK THEM TO THE REGISTRATION NUMBER.
+
+// takes in the registration number, and an array of history dates and links them to a registration number
+// this is how many times a vehicle has been registered  
+export const registrationHistory = async (registration_number, history_dates) => {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        for (const type of violationTypes) {
+            const history = await conn.query(
+                'SELECT * FROM violation WHERE registration_number = ? AND violation_date BETWEEN ? AND ?',
+                [registration_number, history_dates]
+            );
+        }
+            return history;histories
+    } catch (err) {
+        console.error('Error fetching registration history:', err);
+        throw new Error('Failed to fetch registration history');
+    } finally {
+        if (conn) conn.release();
+    }
+}
