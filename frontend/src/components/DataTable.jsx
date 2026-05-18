@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './DataTable.css';
+import Form from './Form.jsx';
 import { getDrivers, getVehicles, getRegistrations, getViolations } from '../api';
 
 /* Data config */
@@ -18,26 +19,26 @@ const COLUMNS = {
 };
 
 const LABELS = {
-  license_number: 'License No.', full_name: 'Full Name', sex: 'Sex',
-  date_of_birth: 'Date of Birth', license_type: 'License Type', license_expiration: 'Expiration Date',
-  license_status: 'License Status', address: 'Address',
-  plate_number: 'Plate No.', make: 'Make', model: 'Model',
-  year_of_manufacture: 'Year', color: 'Color', vehicle_type: 'Vehicle Type',
-  engine_number: 'Engine No.', chassis_number: 'Chassis No.',
-  registration_number: 'Reg. No.', registration_date: 'Date Registered',
+  license_number: 'License No.',      full_name: 'Full Name',           sex: 'Sex',
+  date_of_birth: 'Date of Birth',     license_type: 'License Type',      license_expiration: 'Expiration Date',
+  license_status: 'License Status',   address: 'Address',
+  plate_number: 'Plate No.',          make: 'Make',                     model: 'Model',
+  year_of_manufacture: 'Year',        color: 'Color',                   vehicle_type: 'Vehicle Type',
+  engine_number: 'Engine No.',        chassis_number: 'Chassis No.',
+  registration_number: 'Reg. No.',    registration_date: 'Date Registered',
   expiration_date: 'Expiration Date', registration_status: 'Status',
-  violation_id: 'ID', violation_type: 'Violation Type',
+  violation_id: 'ID',                 violation_type: 'Violation Type',
   date_and_location: 'Date & Location',
-  apprehending_officer: 'Officer', fine_amount: 'Fine Amount', violation_status: 'Status',
+  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',       violation_status: 'Status',
 };
 
 const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
 
 const SECTION_LABELS = {
-  driver: { title: 'Driver Records', sub: 'All registered drivers in the system' },
-  vehicle: { title: 'Vehicle Records', sub: 'All registered motor vehicles' },
-  registration: { title: 'Registration Records', sub: 'All vehicle registration records' },
-  violation: { title: 'Traffic Violations', sub: 'All recorded traffic violation records' },
+  driver:       { title: 'Driver Records',       sub: 'All registered drivers in the system'   },
+  vehicle:      { title: 'Vehicle Records',      sub: 'All registered motor vehicles'          },
+  registration: { title: 'Registration Records', sub: 'All vehicle registration records'       },
+  violation:    { title: 'Traffic Violations',    sub: 'All recorded traffic violation records' },
 };
 
 /* Icons */
@@ -66,10 +67,14 @@ const IconEdit = () => (
 /* Component */
 export default function DataTable({ table }) {
   const cols = COLUMNS[table];
-  const [rows, setRows] = useState([]);
+  const [rows, setRows]       = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch]   = useState('');
+
+  // Form state
+  const [formMode, setFormMode] = useState(null); // 'add' | 'edit' | null
+  const [editRow, setEditRow]   = useState(null); // row data for edit
 
   // Fetch data when tab changes
   useEffect(() => {
@@ -98,18 +103,6 @@ export default function DataTable({ table }) {
 
   }, [table]);
 
-  // Toggle a single row checkbox
-  const toggleRow = (i) => {
-    setSelected(prev =>
-      prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
-    );
-  };
-
-  // Toggle all rows
-  const toggleAll = () => {
-    setSelected(prev => prev.length === filteredRows.length ? [] : filteredRows.map((_, i) => i));
-  };
-
   // Filter rows based on search
   const filteredRows = rows.filter(row =>
     cols.some(col =>
@@ -117,47 +110,62 @@ export default function DataTable({ table }) {
     )
   );
 
+  // Toggle a single row checkbox
+  const toggleRow = (i) =>
+    setSelected(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
+
+  // Toggle all rows
+  const toggleAll = () =>
+    setSelected(prev => prev.length === filteredRows.length ? [] : filteredRows.map((_, i) => i));
+
   const allChecked = filteredRows.length > 0 && selected.length === filteredRows.length;
   const { title, sub } = SECTION_LABELS[table];
 
+  // Form open/close handlers
+  const openAdd    = ()    => { setEditRow(null); setFormMode('add');  };
+  const openEdit   = (row) => { setEditRow(row);  setFormMode('edit'); };
+  const closeForm  = ()    => setFormMode(null);
+
   return (
-    <div className="table-card">
-
-      {/* Toolbar */}
-      <div className="table-toolbar">
-        <div className="table-toolbar-left">
-          <span className="table-section-title">{title}</span>
-          <span className="table-section-sub">{sub}</span>
-        </div>
-        <div className="table-toolbar-right">
-          {/* Search bar */}
-          <div className="search-wrap">
-            <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              className="search-input"
-              type="text"
-              placeholder="Search records..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+    <>
+      <div className="table-card">
+        {/* Toolbar */}
+        <div className="table-toolbar">
+          <div className="table-toolbar-left">
+            <span className="table-section-title">{title}</span>
+            <span className="table-section-sub">{sub}</span>
           </div>
-          {/* Add button - no functionality yet */}
-          <button className="btn-add">
-            <IconAdd /> Add
-          </button>
-          {/* Delete button - no functionality yet */}
-          <button className="btn-delete">
-            <IconDelete /> Delete
-          </button>
-        </div>
-      </div>
+          <div className="table-toolbar-right">
+            {/* Search */}
+            <div className="search-wrap">
+              <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                className="search-input"
+                type="text"
+                placeholder="Search records..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
 
-      {/* Table */}
-      {loading
-        ? <p className="table-loading">Loading records...</p>
-        : (
+            {/* Add button */}
+            <button className="btn-add" onClick={openAdd}>
+              <IconAdd /> Add
+            </button>
+
+            {/* Delete button */}
+            <button className="btn-delete">
+              <IconDelete /> Delete
+            </button>
+          </div>
+        </div>
+
+        {/* Table Content Section */}
+        {loading ? (
+          <p className="table-loading">Loading records...</p>
+        ) : (
           <div className="table-wrap">
             <table>
               <thead>
@@ -175,19 +183,15 @@ export default function DataTable({ table }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.length === 0
-                  ? (
-                    <tr>
-                      <td colSpan={cols.length + 2} className="empty-row">
-                        No records found.
-                      </td>
-                    </tr>
-                  )
-                  : filteredRows.map((row, i) => (
-                    <tr
-                      key={i}
-                      className={selected.includes(i) ? 'row--selected' : ''}
-                    >
+                {filteredRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={cols.length + 2} className="empty-row">
+                      No records found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRows.map((row, i) => (
+                    <tr key={i} className={selected.includes(i) ? 'row--selected' : ''}>
                       <td className="td-check">
                         <input
                           type="checkbox"
@@ -196,7 +200,6 @@ export default function DataTable({ table }) {
                           onChange={() => toggleRow(i)}
                         />
                       </td>
-
                       {cols.map(col => {
                         const val = row[col];
                         return (
@@ -205,7 +208,6 @@ export default function DataTable({ table }) {
                               ? val
                               : col === 'fine_amount'
                                 ? `₱${Number(val).toLocaleString('en-PH')}`
-                                // Robust check if it is a Date object or standard date string
                                 : val instanceof Date
                                   ? val.toISOString().slice(0, 10)
                                   : typeof val === 'string'
@@ -214,18 +216,29 @@ export default function DataTable({ table }) {
                           </td>
                         );
                       })}
-
                       <td className="td-actions">
-                        <button className="btn-edit">
+                        <button className="btn-edit" onClick={() => openEdit(row)}>
                           <IconEdit /> Edit
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         )}
-    </div>
+      </div>
+
+      {/* Form Overlay Sidepanel / Dialog Modals */}
+      {formMode && (
+        <Form
+          mode={formMode}
+          table={table}
+          rowData={editRow}
+          onClose={closeForm}
+        />
+      )}
+    </>
   );
 }
