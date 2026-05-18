@@ -36,7 +36,7 @@ export const getDriverById = async (req, res) => {
 export const createDriver = async (req, res) => {
     const { 
         license_number, 
-        licence_type, 
+        license_type, 
         license_status, 
         license_expiration, 
         license_issuance, 
@@ -50,8 +50,8 @@ export const createDriver = async (req, res) => {
     try {
         conn = await pool.getConnection();
         const result = await conn.query(
-            'INSERT INTO driver (license_number, licence_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [license_number, licence_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address]
+            'INSERT INTO driver (license_number, license_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [license_number, license_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address]
         );
         res.status(201).json({ success: true });
     } catch (err) {
@@ -65,7 +65,7 @@ export const createDriver = async (req, res) => {
 export const updateDriver = async (req, res) => {
     const { 
         license_number,
-        licence_type, 
+        license_type, 
         license_status, 
         license_expiration, 
         license_issuance, 
@@ -79,8 +79,8 @@ export const updateDriver = async (req, res) => {
     try {
         conn = await pool.getConnection();
         const result = await conn.query(
-            'UPDATE driver SET license_number = ?, licence_type = ?, license_status = ?, license_expiration = ?, license_issuance = ?, full_name = ?, sex = ?, date_of_birth = ?, driver_address = ? WHERE license_number = ?',
-            [license_number, licence_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address, license_number]
+            'UPDATE driver SET license_number = ?, license_type = ?, license_status = ?, license_expiration = ?, license_issuance = ?, full_name = ?, sex = ?, date_of_birth = ?, driver_address = ? WHERE license_number = ?',
+            [license_number, license_type, license_status, license_expiration, license_issuance, full_name, sex, date_of_birth, driver_address, license_number]
         );
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Driver not found' });

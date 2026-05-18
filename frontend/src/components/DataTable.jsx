@@ -4,62 +4,62 @@ import { getDrivers, getVehicles, getRegistrations, getViolations } from '../api
 
 /* Data config */
 const FETCHERS = {
-  driver:       getDrivers,
-  vehicle:      getVehicles,
+  driver: getDrivers,
+  vehicle: getVehicles,
   registration: getRegistrations,
-  violation:    getViolations,
+  violation: getViolations,
 };
 
 const COLUMNS = {
-  driver:       ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'address'],
-  vehicle:      ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
+  driver: ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'driver_address'],
+  vehicle: ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
   registration: ['registration_number', 'registration_date', 'expiration_date', 'registration_status'],
-  violation:    ['violation_id', 'violation_type', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
+  violation: ['violation_id', 'violation_type', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
 };
 
 const LABELS = {
-  license_number: 'License No.',     full_name: 'Full Name',         sex: 'Sex',
-  date_of_birth: 'Date of Birth',    license_type: 'License Type',   license_expiration: 'Expiration Date',
-  license_status: 'License Status',  address: 'Address',
-  plate_number: 'Plate No.',         make: 'Make',                   model: 'Model',
-  year_of_manufacture: 'Year',       color: 'Color',                 vehicle_type: 'Vehicle Type',
-  engine_number: 'Engine No.',       chassis_number: 'Chassis No.',
-  registration_number: 'Reg. No.',   registration_date: 'Date Registered',
-  expiration_date: 'Expiration Date',registration_status: 'Status',
-  violation_id: 'ID',                violation_type: 'Violation Type',
+  license_number: 'License No.', full_name: 'Full Name', sex: 'Sex',
+  date_of_birth: 'Date of Birth', license_type: 'License Type', license_expiration: 'Expiration Date',
+  license_status: 'License Status', address: 'Address',
+  plate_number: 'Plate No.', make: 'Make', model: 'Model',
+  year_of_manufacture: 'Year', color: 'Color', vehicle_type: 'Vehicle Type',
+  engine_number: 'Engine No.', chassis_number: 'Chassis No.',
+  registration_number: 'Reg. No.', registration_date: 'Date Registered',
+  expiration_date: 'Expiration Date', registration_status: 'Status',
+  violation_id: 'ID', violation_type: 'Violation Type',
   date_and_location: 'Date & Location',
-  apprehending_officer: 'Officer',   fine_amount: 'Fine Amount',     violation_status: 'Status',
+  apprehending_officer: 'Officer', fine_amount: 'Fine Amount', violation_status: 'Status',
 };
 
 const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
 
 const SECTION_LABELS = {
-  driver:       { title: 'Driver Records',        sub: 'All registered drivers in the system'         },
-  vehicle:      { title: 'Vehicle Records',        sub: 'All registered motor vehicles'                },
-  registration: { title: 'Registration Records',   sub: 'All vehicle registration records'             },
-  violation:    { title: 'Traffic Violations',     sub: 'All recorded traffic violation records'       },
+  driver: { title: 'Driver Records', sub: 'All registered drivers in the system' },
+  vehicle: { title: 'Vehicle Records', sub: 'All registered motor vehicles' },
+  registration: { title: 'Registration Records', sub: 'All vehicle registration records' },
+  violation: { title: 'Traffic Violations', sub: 'All recorded traffic violation records' },
 };
 
 /* Icons */
 const IconAdd = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 
 const IconDelete = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/>
-    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-    <path d="M10 11v6"/><path d="M14 11v6"/>
-    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" /><path d="M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
   </svg>
 );
 
 const IconEdit = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
@@ -76,9 +76,26 @@ export default function DataTable({ table }) {
     setLoading(true);
     setSelected([]);
     setSearch('');
+
     FETCHERS[table]()
-      .then(data => setRows(data))
-      .finally(() => setLoading(false));
+      .then(data => {
+        console.log(`${table} data:`, data);
+
+        if (Array.isArray(data)) {
+          setRows(data);
+        } else {
+          console.error("Backend returned error:", data);
+          setRows([]);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        setRows([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
   }, [table]);
 
   // Toggle a single row checkbox
@@ -116,7 +133,7 @@ export default function DataTable({ table }) {
           {/* Search bar */}
           <div className="search-wrap">
             <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <input
               className="search-input"
@@ -180,17 +197,23 @@ export default function DataTable({ table }) {
                         />
                       </td>
 
-                      {cols.map(col => (
-                        <td key={col}>
-                          {STATUS_KEYS.includes(col)
-                            ? row[col]
-                            : col === 'fine_amount'
-                              ? `₱${Number(row[col]).toLocaleString('en-PH')}`
-                              : typeof row[col] === 'string' && row[col].includes('T')
-                                ? row[col].slice(0, 10)
-                                : row[col] ?? '—'}
-                        </td>
-                      ))}
+                      {cols.map(col => {
+                        const val = row[col];
+                        return (
+                          <td key={col}>
+                            {STATUS_KEYS.includes(col)
+                              ? val
+                              : col === 'fine_amount'
+                                ? `₱${Number(val).toLocaleString('en-PH')}`
+                                // Robust check if it is a Date object or standard date string
+                                : val instanceof Date
+                                  ? val.toISOString().slice(0, 10)
+                                  : typeof val === 'string'
+                                    ? (val.includes('T') ? val.slice(0, 10) : val)
+                                    : val ?? '—'}
+                          </td>
+                        );
+                      })}
 
                       <td className="td-actions">
                         <button className="btn-edit">

@@ -65,8 +65,8 @@ function CurvedPanel() {
                 <path d="M0.000976562 0C0.000976562 0 -0.38117 43.7131 17.8096 58.1064C36.0005 72.4996 38.4142 71.5635 65.3584 80.7383C92.0593 89.8305 95.9323 125.351 96 125.991V716.008C95.936 716.614 92.0727 752.165 65.3584 761.262C38.4144 770.436 36.0014 769.5 17.8105 783.894C2.97386 795.633 0.491815 826.876 0.0810547 837.999C0.0540387 837.999 0.0270212 838 0 838V0H0.000976562Z" fill="url(#paint0_linear_53_35)" />
                 <defs>
                     <linearGradient id="paint0_linear_53_35" x1="48" y1="0" x2="48" y2="838" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#CA3B2F" />
-                        <stop offset="1" stop-color="#E15A38" />
+                        <stop stopColor="#CA3B2F" />
+                        <stop offset="1" stopColor="#E15A38" />
                     </linearGradient>
                 </defs>
             </svg>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import {getDrivers, getRegistrations, getVehicles, getViolations } from './api';  
+import { getDrivers, getRegistrations, getVehicles, getViolations } from './api';  
 import './App.css';
+import Home from './Home'; // Make sure this path points to your new Homepage file
 
-// Fetchers for each table (currently only users, but can be expanded for vehicles, registrations, violations)
+// Keep your original data configurations intact
 const FETCHERS = {
   driver: getDrivers,
   vehicle: getVehicles,
@@ -10,7 +11,6 @@ const FETCHERS = {
   violation: getViolations
 };
 
-// Navigation tab
 const NAV_ITEMS = [
   { key: 'driver',       label: 'Drivers'      },
   { key: 'vehicle',      label: 'Vehicles'     },
@@ -26,79 +26,105 @@ const COLUMNS = {
 };
 
 const LABELS = {
-  license_number: 'License No.',      full_name: 'Full Name',           sex: 'Sex',
-  date_of_birth: 'Date of Birth',     license_type: 'License Type',     license_expiration: 'Expiration Date',
-  address: 'Address',                 plate_number: 'Plate No.',        make: 'Make',
-  model: 'Model',                     year_of_manufacture: 'Year',      color: 'Color',
-  vehicle_type: 'Vehicle Type',       engine_number: 'Engine No.',      chassis_number: 'Chassis No.',
-  registration_number: 'Reg. No.',    registration_date: 'Date Registered',
+  license_number: 'License No.', full_name: 'Full Name', sex: 'Sex',
+  date_of_birth: 'Date of Birth', license_type: 'License Type', license_expiration: 'Expiration Date',
+  license_status: 'License Status', address: 'Address',
+  plate_number: 'Plate No.', make: 'Make', model: 'Model',
+  year_of_manufacture: 'Year', color: 'Color', vehicle_type: 'Vehicle Type',
+  engine_number: 'Engine No.', chassis_number: 'Chassis No.',
+  registration_number: 'Registration No.', registration_date: 'Registration Date',
   expiration_date: 'Expiration Date', registration_status: 'Registration Status',
-  violation_id: 'ID',                 date_and_location: 'Date & Location',
-  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',       violation_status: 'Violation Status',
-  license_status: 'License Status',   violation_type: 'Violation Type',
+  violation_id: 'Violation ID', violation_type: 'Violation Type',
+  date_and_location: 'Date and Location', apprehending_officer: 'Apprehending Officer',
+  fine_amount: 'Fine Amount', violation_status: 'Violation Status'
 };
 
-const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
+const STATUS_KEYS = ['license_status', 'registration_status', 'violation_status'];
 
-// Fetches and displays the data table for the currently selected tab
-function DataTable({ table }) {
-  const cols = COLUMNS[table];
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    FETCHERS[table]()
-      .then(data => setRows(data))
-      .finally(() => setLoading(false));
-  }, [table]);
-
-  if (loading) return <p>Loading...</p>;
-
+function IconEdit() {
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          {/* Render column headers using LABELS, fallback to raw key if label is missing */}
-          <tr>{cols.map(col => <th key={col}>{LABELS[col] || col}</th>)}</tr>
-        </thead>
-        <tbody>
-          {rows.length === 0
-            ? <tr><td colSpan={cols.length} className="empty">No records found.</td></tr>
-            : rows.map((row, i) => (
-              <tr key={i}>
-                {cols.map(col => (
-                  <td key={col}>
-                    {/* Render status columns as plain text */}
-                    {STATUS_KEYS.includes(col)
-                      ? row[col]
-                      // Format fine_amount as Philippine Peso currency
-                      : col === 'fine_amount'
-                        ? `₱${Number(row[col]).toLocaleString('en-PH')}`
-                        // If the value is an ISO date string (contains 'T'), slice to YYYY-MM-DD
-                        : typeof row[col] === 'string' && row[col].includes('T')
-                          ? row[col].slice(0, 10)
-                          // display the value as-is, or '-' if null/undefined
-                          : row[col] ?? '-'}
-                  </td>
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    </div>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
   );
 }
 
 export default function App() {
-  const [active, setActive] = useState('driver'); // default tab on page load
+  // 1. New View State: Controls whether the user sees the landing page ('home') or your database admin application ('admin')
+  const [currentView, setCurrentView] = useState('home');
+  
+  // Your original dashboard navigation state
+  const [active, setActive] = useState('driver'); 
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selected, setSelected] = useState([]);
+
   const current = NAV_ITEMS.find(n => n.key === active);
- 
+
+  useEffect(() => {
+    // Only fetch records if the user has navigated into the admin portal view
+    if (currentView !== 'admin') return;
+
+    let isMounted = true;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      setSelected([]);
+      try {
+        const fetcher = FETCHERS[active];
+        if (!fetcher) throw new Error(`No fetcher for type: ${active}`);
+        const res = await fetcher();
+        if (isMounted) setData(res);
+      } catch (err) {
+        if (isMounted) setError(err.message || 'Error pulling data from server');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    load();
+    return () => { isMounted = false; };
+  }, [active, currentView]); // Added currentView tracking to trigger initial data pull on enter
+
+  // Your original search and checking handlers
+  const cols = COLUMNS[active] || [];
+  const filteredRows = data.filter(row => {
+    if (!searchQuery) return true;
+    return cols.some(col => {
+      const val = row[col];
+      if (val == null) return false;
+      return String(val).toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  });
+
+  const toggleSelectAll = () => {
+    if (selected.length === filteredRows.length) {
+      setSelected([]);
+    } else {
+      setSelected(filteredRows.map((_, i) => i));
+    }
+  };
+
+  const toggleRow = (index) => {
+    if (selected.includes(index)) {
+      setSelected(selected.filter(i => i !== index));
+    } else {
+      setSelected([...selected, index]);
+    }
+  };
+
+  // 2. State-controlled visual switch conditional block
+  if (currentView === 'home') {
+    return <Home onEnter={() => setCurrentView('admin')} />;
+  }
+
+  // 3. Render your original application layout when currentView is set to 'admin'
   return (
     <div className="app">
       {/* Top navigation bar with LTO branding and tab buttons */}
       <header className="topbar">
-        <div className="topbar-left">
+        <div className="topbar-left" style={{ cursor: 'pointer' }} onClick={() => setCurrentView('home')}>
           <div className="brand-mark">LTO</div>
           <div className="brand-info">
             <span className="brand-name">Database Management System</span>
@@ -115,6 +141,10 @@ export default function App() {
               {item.label}
             </button>
           ))}
+          {/* Back to Home landing link */}
+          <button className="nav-btn" style={{ marginLeft: '10px', opacity: 0.7 }} onClick={() => setCurrentView('home')}>
+            ← Leave Admin
+          </button>
         </nav>
       </header>
  
@@ -125,11 +155,90 @@ export default function App() {
             <h1 className="page-title">{current.label}</h1>
             <p className="page-sub">{current.label} records from the LTO database</p>
           </div>
+          
+          <div className="search-box">
+            <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              placeholder={`Search ${current.label.toLowerCase()}...`}
+              className="search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
- 
-        <div className="table-card">
-          <DataTable table={active} />
-        </div>
+
+        {loading && <div className="loading-state">Loading records...</div>}
+        {error && <div className="error-state">Error: {error}</div>}
+
+        {!loading && !error && (
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="th-check">
+                    <input
+                      type="checkbox"
+                      className="row-checkbox"
+                      checked={filteredRows.length > 0 && selected.length === filteredRows.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  {cols.map(col => (
+                    <th key={col}>{LABELS[col] || col}</th>
+                  ))}
+                  <th className="th-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={cols.length + 2} className="td-empty">
+                      No records found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRows.map((row, i) => (
+                    <tr
+                      key={i}
+                      className={selected.includes(i) ? 'row--selected' : ''}
+                    >
+                      <td className="td-check">
+                        <input
+                          type="checkbox"
+                          className="row-checkbox"
+                          checked={selected.includes(i)}
+                          onChange={() => toggleRow(i)}
+                        />
+                      </td>
+
+                      {cols.map(col => (
+                        <td key={col}>
+                          {STATUS_KEYS.includes(col)
+                            ? row[col]
+                            : col === 'fine_amount'
+                              ? `₱${Number(row[col]).toLocaleString('en-PH')}`
+                              : typeof row[col] === 'string' && row[col].includes('T')
+                                ? row[col].slice(0, 10)
+                                : row[col] ?? '—'}
+                        </td>
+                      ))}
+
+                      <td className="td-actions">
+                        <button className="btn-edit">
+                          <IconEdit /> Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </main>
     </div>
   );

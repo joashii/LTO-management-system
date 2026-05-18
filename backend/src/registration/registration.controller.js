@@ -18,7 +18,8 @@ export const getRegistrationById = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const registration = await conn.query('SELECT * FROM registration WHERE id = ?', [req.params.id]);
+        // Changed 'id = ?' to 'registration_number = ?'
+        const registration = await conn.query('SELECT * FROM registration WHERE registration_number = ?', [req.params.registration_number]);
         if (registration.length === 0) {
             return res.status(404).json({ error: 'Registration not found' });
         }
@@ -62,11 +63,10 @@ export const updateRegistration = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        // Update registration details. In a real application, you would also want to handle updates to the associated driver and vehicle records, but for simplicity, we're just updating the registration here.
-        // Updating everything else referencing this registration
+        // Fixed target column to registration_number
         const result = await conn.query(
-            'UPDATE registration SET registration_number = ?, registration_date = ?, registration_status = ?, expiration_date = ? WHERE id = ?',
-            [registration_number, registration_date, registration_status, expiration_date, req.params.id]
+            'UPDATE registration SET registration_date = ?, registration_status = ?, expiration_date = ? WHERE registration_number = ?',
+            [registration_date, registration_status, expiration_date, req.params.registration_number]
         );
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Registration not found' });
@@ -84,8 +84,8 @@ export const deleteRegistration = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        // Deleting the registration should also delete the associated driver and vehicle records, but for simplicity, we're just deleting the registration here.
-        const result = await conn.query('DELETE FROM registration WHERE id = ?', [req.params.id]);
+        // Fixed target column to registration_number
+        const result = await conn.query('DELETE FROM registration WHERE registration_number = ?', [req.params.registration_number]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Registration not found' });
         }
@@ -106,13 +106,11 @@ export const registrationHistory = async (registration_number, history_dates) =>
     let conn;
     try {
         conn = await pool.getConnection();
-        for (const type of violationTypes) {
-            const history = await conn.query(
-                'SELECT * FROM violation WHERE registration_number = ? AND violation_date BETWEEN ? AND ?',
-                [registration_number, history_dates]
-            );
-        }
-            return history;histories
+        const history = await conn.query(
+            'SELECT * FROM violation WHERE registration_number = ? AND violation_date BETWEEN ? AND ?',
+            [registration_number, history_dates[0], history_dates[1]]
+        );
+        return history;
     } catch (err) {
         console.error('Error fetching registration history:', err);
         throw new Error('Failed to fetch registration history');

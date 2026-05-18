@@ -33,8 +33,8 @@ CREATE TABLE vehicle (
     license_number VARCHAR(20),
     registration_number VARCHAR(20),
     PRIMARY KEY (plate_number, engine_number, chassis_number),
-    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE driver_owns (
@@ -43,8 +43,8 @@ CREATE TABLE driver_owns (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (license_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY(license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY(plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number,  chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY(license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number,  chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
 );  
 
 CREATE TABLE vehicle_has (
@@ -53,8 +53,8 @@ CREATE TABLE vehicle_has (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (registration_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE, 
-    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE, 
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE involved_in (
@@ -63,7 +63,7 @@ CREATE TABLE involved_in (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (violation_id, plate_number, engine_number, chassis_number),
-    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE violation (
@@ -75,30 +75,30 @@ CREATE TABLE violation (
     apprehending_officer VARCHAR(100),
     license_number VARCHAR(20),
     registration_number VARCHAR(20),
-    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE violation_type (
     violation_id INT,
     violation_type VARCHAR(50),
     PRIMARY KEY(violation_id, violation_type),
-    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE registration_history (
     registration_number VARCHAR(20),
     history_date DATE,                 
     PRIMARY KEY (registration_number, history_date),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE registration_commits (
     registration_number VARCHAR(20),   
     violation_id INT,                  
     PRIMARY KEY (registration_number, violation_id),  
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -147,11 +147,11 @@ INSERT INTO violation VALUES
 (5, '2024-08-30', 'Ortigas, Pasig',    'Unpaid', 2500.00, 'PO2 Lim',    'N03-19-333444', 'REG-2024-099');
 
 INSERT INTO involved_in VALUES
-('2024-03-10', 'EDSA, Makati',      'ABC 1234', 'ENG-00123', 'CHS-00456'),
-('2024-01-22', 'C5 Road, Pasig',    'XYZ 5678', 'ENG-00789', 'CHS-00012'),
-('2024-05-05', 'EDSA, Quezon City', 'LMN 9012', 'ENG-00345', 'CHS-00678'),
-('2024-06-18', 'SLEX, Muntinlupa',  'DEF 3456', 'ENG-00567', 'CHS-00890'),
-('2024-08-30', 'Ortigas, Pasig',    'GHI 7890', 'ENG-00901', 'CHS-00234');
+(1, 'ABC 1234', 'ENG-00123', 'CHS-00456'),
+(2, 'XYZ 5678', 'ENG-00789', 'CHS-00012'),
+(3, 'LMN 9012', 'ENG-00345', 'CHS-00678'),
+(4, 'DEF 3456', 'ENG-00567', 'CHS-00890'),
+(5, 'GHI 7890', 'ENG-00901', 'CHS-00234');
 
 INSERT INTO violation_type VALUES
 (1, 'Reckless Driving'),
@@ -208,7 +208,12 @@ WHERE license_status = 'Suspended'
 OR license_expiration < CURRENT_DATE;
 
 -- 5.
-SELECT v.violation_id, vt.violation_type, v.violation_date, v.location, v.violation_status, v.fine_amount
+SELECT v.violation_id,
+       vt.violation_type,
+       v.violation_date,
+       v.violation_location,
+       v.violation_status,
+       v.fine_amount
 FROM violation v 
 JOIN violation_type vt 
 ON v.violation_id = vt.violation_id
@@ -223,10 +228,17 @@ WHERE YEAR(v.violation_date) = 2024     -- Using 2024 since yung sample data is 
 GROUP BY vt.violation_type;
 
 -- 7.
-SELECT v.plate_number, v.make, v.model, v.color, i.location, i.violation_date
-FROM involved_in i 
-JOIN vehicle v 
+SELECT v.plate_number,
+       v.make,
+       v.model,
+       v.color,
+       vi.violation_location,
+       vi.violation_date
+FROM involved_in i
+JOIN vehicle v
 ON i.plate_number = v.plate_number
 AND i.engine_number = v.engine_number
 AND i.chassis_number = v.chassis_number
-WHERE i.location LIKE '%Pasig%';
+JOIN violation vi
+ON i.violation_id = vi.violation_id
+WHERE vi.violation_location LIKE '%Pasig%';

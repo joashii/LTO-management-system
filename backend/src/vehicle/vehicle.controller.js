@@ -32,45 +32,73 @@ export const getVehicleById = async (req, res) => {
 }
 
 export const createVehicle = async (req, res) => {
-    const { 
-        plate_number, 
-        engine_number, 
-        chassis_number, 
-        make, 
-        model, 
+    const {
+        plate_number,
+        engine_number,
+        chassis_number,
+        make,
+        model,
         vehicle_type,
-        year_of_manufacture, 
-        license_number, 
-        registration_number 
+        year_of_manufacture,
+        license_number,
+        registration_number
     } = req.body;
 
     let conn;
+
     try {
-        conn = await pool.getConnection();
+        conn = await pool.getConnection(); // missing line
+
         const result = await conn.query(
-            'INSERT INTO vehicle (plate_number, engine_number, chassis_number, vehicle_type, make, model, year_of_manufacture, license_number, registration_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [plate_number, engine_number, chassis_number, vehicle_type, make, model, year_of_manufacture, license_number, registration_number]
+            `INSERT INTO vehicle 
+            (plate_number, engine_number, chassis_number, vehicle_type, make, model, year_of_manufacture, license_number, registration_number) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                plate_number,
+                engine_number,
+                chassis_number,
+                vehicle_type,
+                make,
+                model,
+                year_of_manufacture,
+                license_number,
+                registration_number
+            ]
         );
+
+        // optional: link vehicle to registration
+        await vehicleHas(
+            registration_number,
+            plate_number,
+            engine_number,
+            chassis_number
+        );
+
         res.status(201).json({ success: true });
+
     } catch (err) {
         console.error('Error creating vehicle:', err);
-        res.status(500).json({ success: false, error: 'Failed to create vehicle' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create vehicle'
+        });
+
     } finally {
         if (conn) conn.release();
     }
-}
+};
 
 export const updateVehicle = async (req, res) => {
-    const { 
-        plate_number, 
-        engine_number, 
-        chassis_number, 
-        make, 
-        model, 
+    const {
+        plate_number,
+        engine_number,
+        chassis_number,
+        make,
+        model,
         vehicle_type,
-        year_of_manufacture, 
-        license_number, 
-        registration_number 
+        year_of_manufacture,
+        license_number,
+        registration_number
     } = req.body;
 
     let conn;
@@ -114,7 +142,12 @@ export const deleteVehicle = async (req, res) => {
 // Link Vehicle PK, to registration number
 // If vehicle is deleted/updated....
 
-export const vehicleHas = async (registration_number, plate_number, engine_number, engine_number, chassis_number) => {
+export const vehicleHas = async (
+    registration_number,
+    plate_number,
+    engine_number,
+    chassis_number
+) => {
     let conn;
     try {
         conn = await pool.getConnection();

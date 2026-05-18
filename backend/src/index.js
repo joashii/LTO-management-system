@@ -16,14 +16,14 @@ app.use(cors({
 app.use(express.json());
 
 import driverRoutes from './driver/driver.router.js';
-// import registrationRoutes from './registration/registration.router.js';
-// import vehicleRoutes from './vehicle/vehicle.router.js';
-// import violationRoutes from './violation/violation.router.js';
+import registrationRoutes from './registration/registration.router.js';
+import vehicleRoutes from './vehicle/vehicle.router.js';
+import violationRoutes from './violation/violation.router.js';
 
 app.use('/api/drivers', driverRoutes);
-// app.use('/api/registration', registrationRoutes);
-// app.use('/api/vehicle', vehicleRoutes);
-// app.use('/api/violation', violationRoutes);
+app.use('/api/registrations', registrationRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/violations', violationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend is up and running!' });

@@ -8,6 +8,13 @@
 import { createPool } from 'mariadb';
 import 'dotenv/config';
 
+// check what  app sees:
+console.log("DEBUG - DATABASE CREDENTIALS:", {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD ? "PROVIDED" : "EMPTY/MISSING",
+  database: process.env.DB_NAME
+});
 
 const pool = createPool({
   host: process.env.DB_HOST,

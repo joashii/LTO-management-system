@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getViolations, getViolationById, createViolation, updateViolation, deleteViolation } from './violation.controller';
+import { getViolations, getViolationById, createViolation, updateViolation, deleteViolation } from './violation.controller.js';
 const router = Router();
 
 

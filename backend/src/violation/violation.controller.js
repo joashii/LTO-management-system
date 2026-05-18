@@ -1,10 +1,22 @@
 import pool from '../pool.js';
 
-export const getViolation = async (req, res) => {
+export const getViolations = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const violations = await conn.query('SELECT * FROM violation');
+        // JOIN violation_type and combine date/location to match DataTable.jsx expected columns
+        const query = `
+            SELECT 
+                v.violation_id,
+                vt.violation_type AS violation_type,
+                CONCAT(v.violation_date, ' - ', v.violation_location) AS date_and_location,
+                v.apprehending_officer,
+                v.fine_amount,
+                v.violation_status
+            FROM violation v
+            JOIN violation_type vt ON v.violation_id = vt.violation_id
+        `;
+        const violations = await conn.query(query);
         res.status(200).json(violations);
     } catch (err) {
         console.error('Error fetching violations:', err);
@@ -116,7 +128,7 @@ export const involvedIn = async (violationId, plate_number, engine_number, chass
         console.error('Error linking violation with vehicle:', err);
         throw err;
     } finally {
-        if (conn) conn.release();``
+        if (conn) conn.release();
     }
 }
 
