@@ -56,6 +56,6 @@ router.get("/report6/:year", report6);
 router.get("/report7/:location", report7);
 
 // General Query
-router.post("/generalQuery", generalQuery);
+router.get("/generalQuery", generalQuery);
 
 export default router;

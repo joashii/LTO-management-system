@@ -233,7 +233,8 @@ export const report7 = async (req, res) => {
 };
 
 export const generalQuery = async (req, res) => {
-  const { query } = req.body;
+  const { query } = req.query;
+
   let conn;
 
   try {
@@ -244,10 +245,10 @@ export const generalQuery = async (req, res) => {
       });
     }
 
-    // Remove leading/trailing spaces
+    // Normalize query
     const trimmedQuery = query.trim().toUpperCase();
 
-    // Only allow SELECT statements
+    // Only allow safe read-only queries
     if (
       !trimmedQuery.startsWith("SELECT") &&
       !trimmedQuery.startsWith("DESC") &&
@@ -257,6 +258,7 @@ export const generalQuery = async (req, res) => {
         error: "Only SELECT, DESC, and SHOW queries are allowed",
       });
     }
+
     // Block dangerous keywords
     const blockedKeywords = [
       "INSERT",
@@ -289,7 +291,7 @@ export const generalQuery = async (req, res) => {
     console.error("Error executing general query:", err);
 
     res.status(500).json({
-      error: "Failed to execute general query",
+      error: err.sqlMessage || err.message || "Failed to execute general query",
     });
   } finally {
     if (conn) conn.release();
