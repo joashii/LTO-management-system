@@ -101,9 +101,7 @@ CREATE TABLE registration_commits (
 );
 
 
--- =========================================================================
--- SEED DATA (PERFECTLY ALIGNED)
--- =========================================================================
+-- SEED DATA 
 
 INSERT INTO driver VALUES
 ('N01-23-456789', 'Non-Professional', 'Active',   '2027-05-10', '2022-05-10', 'Juan Dela Cruz',  'Male',   '1995-03-14', '123 Rizal St., Manila'),
@@ -174,10 +172,6 @@ INSERT INTO registration_commits VALUES
 ('REG-2024-055', 3),
 ('REG-2022-010', 4),
 ('REG-2024-099', 5);
-
--- =========================================================================
--- SPECIFICATION REPORTS (FIXED RUNTIME COMPLIANCE)
--- =========================================================================
 
 -- Report 1: Filtered Active Non-Professional Male Drivers
 SELECT * FROM driver

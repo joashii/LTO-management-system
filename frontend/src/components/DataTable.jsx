@@ -34,7 +34,7 @@ const COLUMNS = {
   driver: ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'driver_address'],
   vehicle: ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
   registration: ['registration_number', 'registration_date', 'expiration_date', 'registration_status'],
-  violation: ['violation_id', 'violation_type', 'date_and_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
+  violation: ['violation_id', 'violation_type', 'violation_date', 'violation_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
 };
 
 const LABELS = {
@@ -42,13 +42,13 @@ const LABELS = {
   date_of_birth: 'Date of Birth',     license_type: 'License Type',      license_expiration: 'Expiration Date',
   license_status: 'License Status',   address: 'Address',
   plate_number: 'Plate No.',          make: 'Make',                     model: 'Model',
-  year_of_manufacture: 'Year',        color: 'Color',                   vehicle_type: 'Vehicle Type',
+  year_of_manufacture: 'Year',        color: 'Color',                   vehicle_type: 'Type',
   engine_number: 'Engine No.',        chassis_number: 'Chassis No.',
-  registration_number: 'Reg. No.',    registration_date: 'Date Registered',
-  expiration_date: 'Expiration Date', registration_status: 'Status',
-  violation_id: 'ID',                 violation_type: 'Violation Type',
-  date_and_location: 'Date & Location',
-  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',       violation_status: 'Status',
+  registration_number: 'Reg No.',     registration_date: 'Reg Date',    expiration_date: 'Exp Date',
+  registration_status: 'Status',
+  violation_id: 'Violation ID',       violation_type: 'Type',
+  violation_date: 'Violation Date',   violation_location: 'Location',
+  apprehending_officer: 'Officer',    fine_amount: 'Fine Amount',       violation_status: 'Status'
 };
 
 const STATUS_KEYS = ['registration_status', 'violation_status', 'license_status'];
