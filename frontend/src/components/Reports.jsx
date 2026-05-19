@@ -360,13 +360,18 @@ function ReportCard({ report, isActive, onActivate, onResult }) {
       return;
     }
     onResult({ error: "", rows: null, loading: true });
+
     try {
-      const { data } = await axios.post("/api/generalQuery", {
-        query: params.sql,
+      const { data } = await axios.get("/api/reports/generalQuery", {
+        params: {
+          query: params.sql,
+        },
       });
+
       const rows = Array.isArray(data)
         ? data
         : (data.data ?? data.result ?? []);
+
       onResult({ error: "", rows });
     } catch (err) {
       onResult({
