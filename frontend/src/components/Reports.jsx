@@ -349,9 +349,13 @@ function ReportCard({ report, isActive, onActivate, onResult }) {
 
   const handleGeneralQuery = async () => {
     if (!params.sql?.trim()) {
-      onResult({ error: "Please enter a SQL query.", rows: null });
+      onResult({
+        error: "Please enter a SQL query.",
+        rows: null,
+      });
       return;
     }
+
     if (!/^\s*(SELECT|DESC|SHOW)/i.test(params.sql)) {
       onResult({
         error: "Only SELECT, DESC, and SHOW statements are allowed.",
@@ -359,7 +363,12 @@ function ReportCard({ report, isActive, onActivate, onResult }) {
       });
       return;
     }
-    onResult({ error: "", rows: null, loading: true });
+
+    onResult({
+      error: "",
+      rows: null,
+      loading: true,
+    });
 
     try {
       const { data } = await axios.get("/api/reports/generalQuery", {
@@ -372,15 +381,17 @@ function ReportCard({ report, isActive, onActivate, onResult }) {
         ? data
         : (data.data ?? data.result ?? []);
 
-      onResult({ error: "", rows });
+      onResult({
+        error: "",
+        rows,
+      });
     } catch (err) {
       onResult({
-        error: err?.response?.data?.message || err.message || "Query failed.",
+        error: err?.response?.data?.error || err.message || "Query failed.",
         rows: null,
       });
     }
   };
-
   return (
     <div
       className={`report-card ${isActive ? "report-card--active" : ""}`}
