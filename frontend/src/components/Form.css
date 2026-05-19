@@ -245,3 +245,87 @@ select:disabled {
     border-radius: 0;
   }
 }
+
+/* CUSTOM POP-UP MODAL FRAMEWORK */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.5); /* Darkened semi-transparent backdrop */
+  backdrop-filter: blur(4px); /* Modern frosted-glass background effect */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* Forces it to stay completely on top of everything, including your form backdrop */
+  animation: fadeIn 0.2s ease-out;
+}
+
+.custom-modal-box {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ffddd9;
+  animation: scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.custom-modal-header h4 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #4a1511; /* Matches registry crimson/burgundy tones */
+  font-weight: 700;
+}
+
+.custom-modal-body p {
+  margin: 0 0 24px 0;
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.custom-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.custom-modal-btn {
+  padding: 10px 18px;
+  background-color: #d7261a; /* Orange-red branding primary */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.custom-modal-btn:hover {
+  background-color: #a3160b;
+}
+
+.custom-modal-btn.btn-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.custom-modal-btn.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* Smooth Transition Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

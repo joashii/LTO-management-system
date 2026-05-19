@@ -24,6 +24,9 @@ export default function Form({ mode, table, initialData, onClose, onRefresh }) {
   const [formData, setFormData] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  
+  // Custom Modal State
+  const [modalConfig, setModalConfig] = useState(null);
 
   // Master lists holding backend records
   const [driversList, setDriversList] = useState([]);
@@ -188,6 +191,17 @@ export default function Form({ mode, table, initialData, onClose, onRefresh }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    
+    // Check if submitting violation without registration
+    if (table === 'violation' && !formData.registration_number) {
+        setModalConfig({
+          title: "Missing Information",
+          message: "Please choose a vehicle for this driver before saving.",
+          confirmText: "Got it"
+        });
+        return;
+    }
+    
     setSubmitting(true);
 
     try {
@@ -198,330 +212,381 @@ export default function Form({ mode, table, initialData, onClose, onRefresh }) {
         await API_UPDATERS[table](id, formData);
       }
       
-      if (onRefresh) onRefresh(); // Updates the active state table on App.jsx smoothly
-      onClose();
+      setModalConfig({
+        title: "Success!",
+        message: "Your information has been saved successfully.",
+        confirmText: "Close",
+        onConfirm: () => {
+          if (onRefresh) onRefresh(); // Updates the active state table on App.jsx smoothly
+          onClose();
+        }
+      });
+      
     } catch (err) {
-      setErrorMessage(err.message || 'Database execution failed. Double check your fields.');
+      // We ignore the technical 'err.message' here to keep it simple for the user
+      setModalConfig({
+        title: "Couldn't Save",
+        message: "We ran into a problem while saving. This usually happens if this record already exists, or if some details are incorrect. Please double-check your form and try again.",
+        confirmText: "Okay"
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="form-modal-backdrop">
-      <div className="form-modal-container">
-        <div className="form-header">
-          <h3>{mode === 'add' ? 'Add New' : 'Edit'} {table.toUpperCase()} Record</h3>
-          <button className="btn-close-x" onClick={onClose} aria-label="Close modal">&times;</button>
-        </div>
+    <>
+      <div className="form-modal-backdrop">
+        <div className="form-modal-container">
+          <div className="form-header">
+            <h3>{mode === 'add' ? 'Add New' : 'Edit'} {table.toUpperCase()}</h3>
+            <button className="btn-close-x" onClick={onClose} aria-label="Close modal">&times;</button>
+          </div>
 
-        {errorMessage && <div className="form-error-banner">⚠️ {errorMessage}</div>}
+          {errorMessage && <div className="form-error-banner">⚠️ {errorMessage}</div>}
 
-        <form onSubmit={handleSubmit} className="dynamic-form" autoComplete="off">
-          <div className="form-grid">
-            
-            {/* DRIVER FIELDS */}
-            {table === 'driver' && (
-              <>
-                <div className="form-section-divider">Identity Profile</div>
-                <div className="form-group">
-                  <label>Full Name *</label>
-                  <input type="text" name="full_name" placeholder="e.g., Juan Dela Cruz" value={formData.full_name || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>License Number *</label>
-                  <input type="text" name="license_number" placeholder="e.g., N01-23-456789" value={formData.license_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
-                </div>
-                <div className="form-group">
-                  <label>Sex *</label>
-                  <select name="sex" value={formData.sex || ''} onChange={handleChange} required>
-                    <option value="" disabled>Select Sex</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Date of Birth *</label>
-                  <input type="date" name="date_of_birth" value={formData.date_of_birth || ''} onChange={handleChange} required />
-                </div>
+          <form onSubmit={handleSubmit} className="dynamic-form" autoComplete="off">
+            <div className="form-grid">
+              
+              {/* DRIVER FIELDS */}
+              {table === 'driver' && (
+                <>
+                  <div className="form-section-divider">Personal Information</div>
+                  <div className="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="full_name" placeholder="e.g., Juan Dela Cruz" value={formData.full_name || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>License Number *</label>
+                    <input type="text" name="license_number" placeholder="e.g., N01-23-456789" value={formData.license_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
+                  </div>
+                  <div className="form-group">
+                    <label>Sex *</label>
+                    <select name="sex" value={formData.sex || ''} onChange={handleChange} required>
+                      <option value="" disabled>Select Sex</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date of Birth *</label>
+                    <input type="date" name="date_of_birth" value={formData.date_of_birth || ''} onChange={handleChange} required />
+                  </div>
 
-                <div className="form-section-divider">Licensing Status parameters</div>
-                <div className="form-group">
-                  <label>License Type *</label>
-                  <select name="license_type" value={formData.license_type || ''} onChange={handleChange} required>
-                    <option value="" disabled>Select Type</option>
-                    <option value="Non-Professional">Non-Professional</option>
-                    <option value="Professional">Professional</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>License Status *</label>
-                  <select name="license_status" value={formData.license_status || ''} onChange={handleChange} required>
-                    <option value="" disabled>Select Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Expired">Expired</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Issuance Date *</label>
-                  <input type="date" name="license_issuance" value={formData.license_issuance || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Expiration Date *</label>
-                  <input type="date" name="license_expiration" value={formData.license_expiration || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group full-width">
-                  <label>Driver Contact Address *</label>
-                  <input type="text" name="address" placeholder="e.g., 123 Rizal St., Manila" value={formData.address || ''} onChange={handleChange} required />
-                </div>
-              </>
-            )}
+                  <div className="form-section-divider">License Details</div>
+                  <div className="form-group">
+                    <label>License Type *</label>
+                    <select name="license_type" value={formData.license_type || ''} onChange={handleChange} required>
+                      <option value="" disabled>Select Type</option>
+                      <option value="Non-Professional">Non-Professional</option>
+                      <option value="Professional">Professional</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>License Status *</label>
+                    <select name="license_status" value={formData.license_status || ''} onChange={handleChange} required>
+                      <option value="" disabled>Select Status</option>
+                      <option value="Active">Active</option>
+                      <option value="Expired">Expired</option>
+                      <option value="Suspended">Suspended</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date Issued *</label>
+                    <input type="date" name="license_issuance" value={formData.license_issuance || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Expiration Date *</label>
+                    <input type="date" name="license_expiration" value={formData.license_expiration || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group full-width">
+                    <label>Home Address *</label>
+                    <input type="text" name="address" placeholder="e.g., 123 Rizal St., Manila" value={formData.address || ''} onChange={handleChange} required />
+                  </div>
+                </>
+              )}
 
-            {/* REGISTRATION FIELDS */}
-            {table === 'registration' && (
-              <>
-                <div className="form-section-divider">Registration Metadata</div>
-                <div className="form-group">
-                  <label>Registration Number *</label>
-                  <input type="text" name="registration_number" placeholder="e.g., REG-2026-001" value={formData.registration_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
-                </div>
-                <div className="form-group">
-                  <label>Current Status *</label>
-                  <select name="registration_status" value={formData.registration_status || ''} onChange={handleChange} required>
-                    <option value="" disabled>Select Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Registration Date *</label>
-                  <input type="date" name="registration_date" value={formData.registration_date || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Expiration Date *</label>
-                  <input type="date" name="expiration_date" value={formData.expiration_date || ''} onChange={handleChange} required />
-                </div>
+              {/* REGISTRATION FIELDS */}
+              {table === 'registration' && (
+                <>
+                  <div className="form-section-divider">Registration Details</div>
+                  <div className="form-group">
+                    <label>Registration Number *</label>
+                    <input type="text" name="registration_number" placeholder="e.g., REG-2026-001" value={formData.registration_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
+                  </div>
+                  <div className="form-group">
+                    <label>Registration Status *</label>
+                    <select name="registration_status" value={formData.registration_status || ''} onChange={handleChange} required>
+                      <option value="" disabled>Select Status</option>
+                      <option value="Active">Active</option>
+                      <option value="Expired">Expired</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date Registered *</label>
+                    <input type="date" name="registration_date" value={formData.registration_date || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Expiration Date *</label>
+                    <input type="date" name="expiration_date" value={formData.expiration_date || ''} onChange={handleChange} required />
+                  </div>
 
-                {mode === 'add' && (
-                  <>
-                    <div className="form-section-divider">Asset Ownership Assignment</div>
-                    <div className="form-group full-width search-autocomplete-wrapper">
-                      <label>Select Target Vehicle to Register (Search Plate, Make, or Model) *</label>
-                      <input 
-                        type="text" 
-                        placeholder="Type plate code, car brand, or model name..."
-                        value={vehicleSearchQuery}
-                        onChange={(e) => {
-                          setVehicleSearchQuery(e.target.value);
-                          setShowVehicleResults(true);
-                          if(!e.target.value) {
-                            setFormData(prev => { const c = {...prev}; delete c.selected_vehicle; return c; });
-                          }
-                        }}
-                        onFocus={() => setShowVehicleResults(true)}
-                        required={!formData.selected_vehicle}
-                      />
-                      
-                      {showVehicleResults && vehicleSearchQuery && (
-                        <ul className="autocomplete-results-box">
-                          {filteredVehiclesSearch.length > 0 ? (
-                            filteredVehiclesSearch.map(v => (
-                              <li key={`${v.plate_number}-${v.engine_number}`} onClick={() => handleSelectVehicle(v)}>
-                                <strong>{v.plate_number}</strong> — {v.make} {v.model} <small style={{ color: '#666', marginLeft: '5px' }}>({v.color})</small>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="no-results-found">No matching unregistered vehicles found in local listings</li>
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-
-            {/* VEHICLE FIELDS */}
-            {table === 'vehicle' && (
-              <>
-                <div className="form-section-divider">Structural Attributes</div>
-                <div className="form-group">
-                  <label>Plate Number *</label>
-                  <input type="text" name="plate_number" placeholder="e.g., ABC 1234" value={formData.plate_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
-                </div>
-                <div className="form-group">
-                  <label>Vehicle Type *</label>
-                  <input type="text" name="vehicle_type" placeholder="e.g., Sedan, SUV, Truck" value={formData.vehicle_type || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Engine Number *</label>
-                  <input type="text" name="engine_number" placeholder="e.g., ENG-XXXXX" value={formData.engine_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
-                </div>
-                <div className="form-group">
-                  <label>Chassis Number *</label>
-                  <input type="text" name="chassis_number" placeholder="e.g., CHS-XXXXX" value={formData.chassis_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
-                </div>
-
-                <div className="form-section-divider">Model Specifications</div>
-                <div className="form-group">
-                  <label>Make Manufacture *</label>
-                  <input type="text" name="make" placeholder="e.g., Toyota, Honda" value={formData.make || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Model Variant *</label>
-                  <input type="text" name="model" placeholder="e.g., Vios, Civic" value={formData.model || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Year of Manufacture *</label>
-                  <input type="number" name="year_of_manufacture" placeholder="e.g., 2024" value={formData.year_of_manufacture || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Color *</label>
-                  <input type="text" name="color" placeholder="e.g., Matte Black" value={formData.color || ''} onChange={handleChange} required />
-                </div>
-                
-                <div className="form-section-divider">Legal Owner Assignment</div>
-                <div className="form-group full-width search-autocomplete-wrapper">
-                  <label>Assign Primary Driver (Search Name or License) *</label>
-                  <input 
-                    type="text" 
-                    placeholder="Type name or license format..."
-                    value={driverSearchQuery}
-                    onChange={(e) => {
-                      setDriverSearchQuery(e.target.value);
-                      setShowDriverResults(true);
-                      if(!e.target.value) {
-                        setFormData(prev => { const c = {...prev}; delete c.license_number; return c; });
-                      }
-                    }}
-                    onFocus={() => setShowDriverResults(true)}
-                    required={!formData.license_number}
-                  />
-                  <input type="hidden" name="license_number" value={formData.license_number || ''} />
-                  
-                  {showDriverResults && driverSearchQuery && (
-                    <ul className="autocomplete-results-box">
-                      {filteredDriversSearch.length > 0 ? (
-                        filteredDriversSearch.map(d => (
-                          <li key={d.license_number} onClick={() => handleSelectDriver(d)}>
-                            <strong>{d.full_name}</strong> <small>({d.license_number})</small>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="no-results-found">No matching drivers found in LTO registry</li>
-                      )}
-                    </ul>
+                  {mode === 'add' && (
+                    <>
+                      <div className="form-section-divider">Vehicle Selection</div>
+                      <div className="form-group full-width search-autocomplete-wrapper">
+                        <label>Search for Vehicle (by Plate, Make, or Model) *</label>
+                        <input 
+                          type="text" 
+                          placeholder="Type plate number, brand, or model..."
+                          value={vehicleSearchQuery}
+                          onChange={(e) => {
+                            setVehicleSearchQuery(e.target.value);
+                            setShowVehicleResults(true);
+                            if(!e.target.value) {
+                              setFormData(prev => { const c = {...prev}; delete c.selected_vehicle; return c; });
+                            }
+                          }}
+                          onFocus={() => setShowVehicleResults(true)}
+                          required={!formData.selected_vehicle}
+                        />
+                        
+                        {showVehicleResults && vehicleSearchQuery && (
+                          <ul className="autocomplete-results-box">
+                            {filteredVehiclesSearch.length > 0 ? (
+                              filteredVehiclesSearch.map(v => (
+                                <li key={`${v.plate_number}-${v.engine_number}`} onClick={() => handleSelectVehicle(v)}>
+                                  <strong>{v.plate_number}</strong> — {v.make} {v.model} <small style={{ color: '#666', marginLeft: '5px' }}>({v.color})</small>
+                                </li>
+                              ))
+                            ) : (
+                              <li className="no-results-found">No matching unregistered vehicles found.</li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </>
                   )}
-                </div>
-              </>
-            )}
+                </>
+              )}
 
-            {/* VIOLATION FIELDS */}
-            {table === 'violation' && (
-              <>
-                <div className="form-section-divider">Infraction Log Detail</div>
-                <div className="form-group">
-                  <label>Violation Type *</label>
-                  <input type="text" name="violation_type" placeholder="e.g., Reckless Driving" value={formData.violation_type || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Fine Amount (PHP) *</label>
-                  <input type="number" step="0.01" name="fine_amount" placeholder="2000.00" value={formData.fine_amount || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Violation Date *</label>
-                  <input type="date" name="violation_date" value={formData.violation_date || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Violation Location *</label>
-                  <input type="text" name="violation_location" placeholder="e.g., EDSA, Makati" value={formData.violation_location || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Apprehending Officer *</label>
-                  <input type="text" name="apprehending_officer" placeholder="e.g., PO1 Dela Cruz" value={formData.apprehending_officer || ''} onChange={handleChange} required />
-                </div>
-                <div className="form-group">
-                  <label>Settlement Status *</label>
-                  <select name="violation_status" value={formData.violation_status || ''} onChange={handleChange} required>
-                    <option value="" disabled>Select Status</option>
-                    <option value="Unpaid">Unpaid</option>
-                    <option value="Paid">Paid</option>
-                  </select>
-                </div>
+              {/* VEHICLE FIELDS */}
+              {table === 'vehicle' && (
+                <>
+                  <div className="form-section-divider">Basic Vehicle Info</div>
+                  <div className="form-group">
+                    <label>Plate Number *</label>
+                    <input type="text" name="plate_number" placeholder="e.g., ABC 1234" value={formData.plate_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
+                  </div>
+                  <div className="form-group">
+                    <label>Vehicle Type *</label>
+                    <input type="text" name="vehicle_type" placeholder="e.g., Sedan, SUV, Motorcycle" value={formData.vehicle_type || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Engine Number *</label>
+                    <input type="text" name="engine_number" placeholder="e.g., ENG-XXXXX" value={formData.engine_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
+                  </div>
+                  <div className="form-group">
+                    <label>Chassis Number *</label>
+                    <input type="text" name="chassis_number" placeholder="e.g., CHS-XXXXX" value={formData.chassis_number || ''} onChange={handleChange} required disabled={mode === 'edit'} />
+                  </div>
 
-                <div className="form-section-divider">Relational Mapping References</div>
-                <div className="form-group search-autocomplete-wrapper">
-                  <label>Offending Driver (Search Name or License) *</label>
-                  <input 
-                    type="text" 
-                    placeholder="Type name or license format..."
-                    value={driverSearchQuery}
-                    onChange={(e) => {
-                      setDriverSearchQuery(e.target.value);
-                      setShowDriverResults(true);
-                      if(!e.target.value) {
-                        setFormData(prev => { const c = {...prev}; delete c.license_number; return c; });
-                        setFilteredRegistrations([]);
-                      }
-                    }}
-                    onFocus={() => setShowDriverResults(true)}
-                    required={!formData.license_number}
-                  />
+                  <div className="form-section-divider">Make & Model Details</div>
+                  <div className="form-group">
+                    <label>Make (Manufacturer) *</label>
+                    <input type="text" name="make" placeholder="e.g., Toyota, Honda" value={formData.make || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Model *</label>
+                    <input type="text" name="model" placeholder="e.g., Vios, Civic" value={formData.model || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Year Manufactured *</label>
+                    <input type="number" name="year_of_manufacture" placeholder="e.g., 2024" value={formData.year_of_manufacture || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Color *</label>
+                    <input type="text" name="color" placeholder="e.g., Matte Black" value={formData.color || ''} onChange={handleChange} required />
+                  </div>
                   
-                  {showDriverResults && driverSearchQuery && (
-                    <ul className="autocomplete-results-box">
-                      {filteredDriversSearch.length > 0 ? (
-                        filteredDriversSearch.map(d => (
-                          <li key={d.license_number} onClick={() => handleSelectDriver(d)}>
-                            <strong>{d.full_name}</strong> <small>({d.license_number})</small>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="no-results-found">No matching drivers found</li>
-                      )}
-                    </ul>
-                  )}
-                </div>
+                  <div className="form-section-divider">Owner Selection</div>
+                  <div className="form-group full-width search-autocomplete-wrapper">
+                    <label>Search for Owner (by Name or License) *</label>
+                    <input 
+                      type="text" 
+                      placeholder="Type owner's name or license number..."
+                      value={driverSearchQuery}
+                      onChange={(e) => {
+                        setDriverSearchQuery(e.target.value);
+                        setShowDriverResults(true);
+                        if(!e.target.value) {
+                          setFormData(prev => { const c = {...prev}; delete c.license_number; return c; });
+                        }
+                      }}
+                      onFocus={() => setShowDriverResults(true)}
+                      required={!formData.license_number}
+                    />
+                    <input type="hidden" name="license_number" value={formData.license_number || ''} />
+                    
+                    {showDriverResults && driverSearchQuery && (
+                      <ul className="autocomplete-results-box">
+                        {filteredDriversSearch.length > 0 ? (
+                          filteredDriversSearch.map(d => (
+                            <li key={d.license_number} onClick={() => handleSelectDriver(d)}>
+                              <strong>{d.full_name}</strong> <small>({d.license_number})</small>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="no-results-found">No matching drivers found in the system.</li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
 
-                <div className="form-group">
-                  <label>Associated Vehicle Registration *</label>
-                  <select 
-                    name="registration_number" 
-                    onChange={handleChange} 
-                    required 
-                    value={formData.registration_number || ""}
-                  >
-                    <option value="" disabled>
-                      {!formData.license_number 
-                        ? "⚠️ Choose Offending Driver First" 
-                        : filteredRegistrations.length === 0 
-                        ? "No registrations found for this driver" 
-                        : "Select Driver's Reg Number"
-                      }
-                    </option>
-                    {filteredRegistrations.map(r => (
-                      <option key={r.registration_number} value={r.registration_number}>
-                        {r.registration_number}
+              {/* VIOLATION FIELDS */}
+              {table === 'violation' && (
+                <>
+                  <div className="form-section-divider">Violation Details</div>
+                  <div className="form-group">
+                    <label>Violation Type *</label>
+                    <input type="text" name="violation_type" placeholder="e.g., Reckless Driving, Speeding" value={formData.violation_type || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Fine Amount (PHP) *</label>
+                    <input type="number" step="0.01" name="fine_amount" placeholder="2000.00" value={formData.fine_amount || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Date of Violation *</label>
+                    <input type="date" name="violation_date" value={formData.violation_date || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="violation_location" placeholder="e.g., EDSA, Makati" value={formData.violation_location || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Apprehending Officer *</label>
+                    <input type="text" name="apprehending_officer" placeholder="e.g., PO1 Dela Cruz" value={formData.apprehending_officer || ''} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Payment Status *</label>
+                    <select name="violation_status" value={formData.violation_status || ''} onChange={handleChange} required>
+                      <option value="" disabled>Select Status</option>
+                      <option value="Unpaid">Unpaid</option>
+                      <option value="Paid">Paid</option>
+                    </select>
+                  </div>
+
+                  <div className="form-section-divider">Offender & Vehicle Details</div>
+                  <div className="form-group search-autocomplete-wrapper">
+                    <label>Search for Offender (by Name or License) *</label>
+                    <input 
+                      type="text" 
+                      placeholder="Type driver's name or license..."
+                      value={driverSearchQuery}
+                      onChange={(e) => {
+                        setDriverSearchQuery(e.target.value);
+                        setShowDriverResults(true);
+                        if(!e.target.value) {
+                          setFormData(prev => { const c = {...prev}; delete c.license_number; return c; });
+                          setFilteredRegistrations([]);
+                        }
+                      }}
+                      onFocus={() => setShowDriverResults(true)}
+                      required={!formData.license_number}
+                    />
+                    
+                    {showDriverResults && driverSearchQuery && (
+                      <ul className="autocomplete-results-box">
+                        {filteredDriversSearch.length > 0 ? (
+                          filteredDriversSearch.map(d => (
+                            <li key={d.license_number} onClick={() => handleSelectDriver(d)}>
+                              <strong>{d.full_name}</strong> <small>({d.license_number})</small>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="no-results-found">No matching drivers found.</li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Driver's Registered Vehicle *</label>
+                    <select 
+                      name="registration_number" 
+                      onChange={handleChange} 
+                      required 
+                      value={formData.registration_number || ""}
+                    >
+                      <option value="" disabled>
+                        {!formData.license_number 
+                          ? "⚠️ Choose the Driver First" 
+                          : filteredRegistrations.length === 0 
+                          ? "No registered vehicles found for this driver" 
+                          : "Select the Vehicle's Registration"
+                        }
                       </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
+                      {filteredRegistrations.map(r => (
+                        <option key={r.registration_number} value={r.registration_number}>
+                          {r.registration_number}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
 
-          </div>
+            </div>
 
-          <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose} disabled={submitting}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-submit" disabled={submitting}>
-              {submitting ? 'Saving Record...' : 'Save Record'}
-            </button>
-          </div>
-        </form>
+            <div className="form-actions">
+              <button type="button" className="btn-cancel" onClick={onClose} disabled={submitting}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-submit" disabled={submitting}>
+                {submitting ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {/* CUSTOM POP-UP MODAL OVERLAY */}
+      {modalConfig && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-box">
+            <div className="custom-modal-header">
+              <h4>{modalConfig.title || 'System Notification'}</h4>
+            </div>
+            <div className="custom-modal-body">
+              <p>{modalConfig.message}</p>
+            </div>
+            <div className="custom-modal-footer">
+              {modalConfig.onCancel && (
+                <button 
+                  className="custom-modal-btn btn-secondary" 
+                  onClick={() => {
+                    if (modalConfig.onCancel) modalConfig.onCancel();
+                    setModalConfig(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                className="custom-modal-btn" 
+                onClick={() => {
+                  if (modalConfig.onConfirm) modalConfig.onConfirm();
+                  setModalConfig(null);
+                }}
+              >
+                {modalConfig.confirmText || 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

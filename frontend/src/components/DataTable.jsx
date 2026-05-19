@@ -90,7 +90,7 @@ export default function DataTable({ table }) {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
   const [search, setSearch]   = useState('');
-  
+  const [modalConfig, setModalConfig] = useState(null);
   // State to automatically trigger a data re-fetch after sequential deletions complete
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -147,36 +147,60 @@ export default function DataTable({ table }) {
   const closeForm  = () => setFormMode(null);
 
   // Triggered exclusively by the main toolbar delete button
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = () => {
     if (selected.length === 0) {
-      alert('Please check the box next to at least one record you want to delete.');
+      setModalConfig({
+        title: "No Selection",
+        message: "Please check the box next to at least one record you want to delete.",
+        confirmText: "Got it"
+      });
       return;
     }
 
     const confirmMsg = selected.length === 1 
-      ? 'Are you sure you want to permanently delete this selected record?' 
-      : `Are you sure you want to permanently delete these ${selected.length} selected records?`;
+      ? 'Are you sure you want to permanently delete this selected record? This action cannot be undone.' 
+      : `Are you sure you want to permanently delete these ${selected.length} selected records? This action cannot be undone.`;
 
-    if (!window.confirm(confirmMsg)) return;
+    // 1. Show the confirmation modal instead of window.confirm
+    setModalConfig({
+      title: "Confirm Deletion",
+      message: confirmMsg,
+      confirmText: "Yes, Delete",
+      onCancel: () => setModalConfig(null),
+      
+      // 2. If they click yes, run the actual backend deletion logic
+      onConfirm: async () => {
+        try {
+          const rowsToDelete = selected.map(index => filteredRows[index]);
+          const keyField = KEY_FIELDS[table];
+          const deleteFn = DELETERS[table];
 
-    try {
-      const rowsToDelete = selected.map(index => filteredRows[index]);
-      const keyField = KEY_FIELDS[table];
-      const deleteFn = DELETERS[table];
+          for (const row of rowsToDelete) {
+            const id = row[keyField];
+            await deleteFn(id);
+          }
 
-      // Execute sequential async deletions across chosen resources
-      for (const row of rowsToDelete) {
-        const id = row[keyField];
-        await deleteFn(id);
+          setSelected([]);                     
+          setRefreshTrigger(prev => prev + 1); 
+          
+          setModalConfig({
+            title: "Deleted!",
+            message: "The selected records have been permanently removed.",
+            confirmText: "Okay",
+            onConfirm: () => setModalConfig(null)
+          });
+
+        } catch (err) {
+          console.error('Deletion operation error:', err);
+          setModalConfig({
+            title: "Couldn't Delete",
+            message: "We couldn't delete these records. They might be tied to other active records in the system (like an active violation).",
+            confirmText: "Okay",
+            onConfirm: () => setModalConfig(null)
+          });
+        }
       }
-
-      alert('Selected record(s) deleted successfully.');
-      setSelected([]);                     // Wipe array selections clean
-      setRefreshTrigger(prev => prev + 1); // Auto re-fire grid fetch lifecycle
-    } catch (err) {
-      console.error('Deletion operation error:', err);
-      alert(err.message || 'Failed to successfully delete selection records.');
-    }
+    });
   };
 
   return (
@@ -291,6 +315,42 @@ export default function DataTable({ table }) {
           rowData={editRow}
           onClose={closeForm}
         />
+      )}
+
+      {/* CUSTOM POP-UP MODAL OVERLAY */}
+      {modalConfig && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-box">
+            <div className="custom-modal-header">
+              <h4>{modalConfig.title || 'System Notification'}</h4>
+            </div>
+            <div className="custom-modal-body">
+              <p>{modalConfig.message}</p>
+            </div>
+            <div className="custom-modal-footer">
+              {modalConfig.onCancel && (
+                <button 
+                  className="custom-modal-btn btn-secondary" 
+                  onClick={() => {
+                    if (modalConfig.onCancel) modalConfig.onCancel();
+                    setModalConfig(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                className="custom-modal-btn" 
+                onClick={() => {
+                  if (modalConfig.onConfirm) modalConfig.onConfirm();
+                  setModalConfig(null);
+                }}
+              >
+                {modalConfig.confirmText || 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

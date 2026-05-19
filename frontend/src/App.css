@@ -187,3 +187,37 @@ tbody tr:hover { background: #FAFAF9; }
   padding: 48px 16px !important;
   font-size: 13px;
 }
+
+/* VIEW TRANSITIONS (HOME TO ADMIN DASHBOARD) */
+
+/* Base container that keeps everything uniform during transitions */
+.page-transition-wrap {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* 1. When leaving Home: Dissolve and slide upwards */
+.page-transition-wrap.exit-active {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+/* 2. When entering Admin: Rise from the bottom with a springy expansion effect */
+.page-transition-wrap.enter-active {
+  animation: dashboardReveal 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes dashboardReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

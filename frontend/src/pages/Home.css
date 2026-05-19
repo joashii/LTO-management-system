@@ -272,3 +272,231 @@
   opacity: 0.8;
   font-weight: 400;
 }
+
+/* VIDEO INTRO AND TRANSITION SYSTEM */
+
+/* High-level wrapper containing both structures cleanly */
+.home-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+/* Fullscreen black cinematic view layer for the video */
+.video-intro-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Keeps video responsive and filling aspect ratio */
+}
+
+/* Minimalist Skip Button */
+.skip-video-btn {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.skip-video-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* Smooth Fade transition modifiers */
+.home {
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out; /* 1.2 second smooth fade */
+}
+
+.home.fade-in {
+  opacity: 1;
+}
+
+.home.hidden {
+  display: none !important;
+}
+
+/* ADVANCED AUDIO PROMPT & DUAL CROSS-FADE TRANSITIONS */
+
+.home-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #111111; /* Dark background matches cinematic intro styling */
+}
+
+/* Initial Browser Audio Unblock Prompt Styles */
+.intro-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0b0b0b;
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.prompt-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #ffffff;
+  animation: promptPulse 2s infinite ease-in-out;
+}
+
+.prompt-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.prompt-card h2 {
+  font-size: 24px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.prompt-card p {
+  font-size: 14px;
+  color: #888888;
+  margin: 0;
+}
+
+.prompt-enter-btn {
+  background: var(--accent, #ff6b00);
+  color: #ffffff;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.3);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.prompt-enter-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+/* Video Layer Structure */
+.video-intro-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.5s;
+}
+
+.intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Smooth Video Dissolve */
+.video-intro-container.video-fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Minimalist Skip Button */
+.skip-video-btn {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 26px;
+  border-radius: 30px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.skip-video-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+}
+
+/* Dashboard Cross-Fade Entry Modifier */
+.home {
+  opacity: 0;
+  transform: scale(0.99); /* Gentle dramatic zoom effect */
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.home.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes promptPulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.85; }
+}
+
+/* EXIT ANIMATION */
+.home-wrapper.exiting {
+  animation: fadeOutUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOutUp {
+  to {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
