@@ -1,11 +1,11 @@
-DROP DATABASE IF EXISTS ltodatabase;   -- inadd ko lang for checking 
+DROP DATABASE IF EXISTS ltodatabase;   
 CREATE DATABASE ltodatabase;
 USE ltodatabase;
 
 CREATE TABLE driver (
     license_number VARCHAR(20) PRIMARY KEY,
     license_type VARCHAR(20),
-    license_status VARCHAR(20),     -- inedit ko lang typo ksi, lincense_status
+    license_status VARCHAR(20),     
     license_expiration DATE,
     license_issuance DATE,
     full_name VARCHAR(100),
@@ -26,15 +26,13 @@ CREATE TABLE vehicle (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     make VARCHAR(50),
-    color VARCHAR(20),
+    color VARCHAR(20), 
     vehicle_type VARCHAR(20),
     model VARCHAR(50),
     year_of_manufacture INT,
     license_number VARCHAR(20),
-    registration_number VARCHAR(20),
     PRIMARY KEY (plate_number, engine_number, chassis_number),
-    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE driver_owns (
@@ -43,9 +41,9 @@ CREATE TABLE driver_owns (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (license_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY(license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY(plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number,  chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
-);  
+    FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 CREATE TABLE vehicle_has (
     registration_number VARCHAR(20),
@@ -53,16 +51,7 @@ CREATE TABLE vehicle_has (
     engine_number VARCHAR(50),
     chassis_number VARCHAR(50),
     PRIMARY KEY (registration_number, plate_number, engine_number, chassis_number),
-    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE, 
-    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE involved_in (
-    violation_id INT,
-    plate_number VARCHAR(20),
-    engine_number VARCHAR(50),
-    chassis_number VARCHAR(50),
-    PRIMARY KEY (violation_id, plate_number, engine_number, chassis_number),
+    FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -77,6 +66,16 @@ CREATE TABLE violation (
     registration_number VARCHAR(20),
     FOREIGN KEY (license_number) REFERENCES driver(license_number) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (registration_number) REFERENCES registration(registration_number) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE involved_in (
+    violation_id INT,
+    plate_number VARCHAR(20),
+    engine_number VARCHAR(50),
+    chassis_number VARCHAR(50),
+    PRIMARY KEY (violation_id, plate_number, engine_number, chassis_number),
+    FOREIGN KEY (violation_id) REFERENCES violation(violation_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (plate_number, engine_number, chassis_number) REFERENCES vehicle(plate_number, engine_number, chassis_number) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE violation_type (
@@ -102,7 +101,9 @@ CREATE TABLE registration_commits (
 );
 
 
--- SEED DATA -- 
+-- =========================================================================
+-- SEED DATA (PERFECTLY ALIGNED)
+-- =========================================================================
 
 INSERT INTO driver VALUES
 ('N01-23-456789', 'Non-Professional', 'Active',   '2027-05-10', '2022-05-10', 'Juan Dela Cruz',  'Male',   '1995-03-14', '123 Rizal St., Manila'),
@@ -119,11 +120,11 @@ INSERT INTO registration VALUES
 ('REG-2024-099', '2024-07-01', 'Active',  '2025-07-01');
 
 INSERT INTO vehicle VALUES
-('ABC 1234', 'ENG-00123', 'CHS-00456', 'Toyota',     'White',  'Sedan',  'Vios',   2020, 'N01-23-456789', 'REG-2024-001'),
-('XYZ 5678', 'ENG-00789', 'CHS-00012', 'Honda',      'Silver', 'SUV',    'CR-V',   2019, 'P01-21-123456', 'REG-2023-089'),
-('LMN 9012', 'ENG-00345', 'CHS-00678', 'Mitsubishi', 'Black',  'Pickup', 'Strada', 2021, 'N02-20-654321', 'REG-2024-055'),
-('DEF 3456', 'ENG-00567', 'CHS-00890', 'Ford',       'Blue',   'SUV',    'Everest',2022, 'P02-22-111222', 'REG-2022-010'),
-('GHI 7890', 'ENG-00901', 'CHS-00234', 'Suzuki',     'Red',    'Sedan',  'Ciaz',   2023, 'N03-19-333444', 'REG-2024-099');
+('ABC 1234', 'ENG-00123', 'CHS-00456', 'Toyota',     'White',  'Sedan',  'Vios',   2020, 'N01-23-456789'),
+('XYZ 5678', 'ENG-00789', 'CHS-00012', 'Honda',      'Silver', 'SUV',    'CR-V',   2019, 'P01-21-123456'),
+('LMN 9012', 'ENG-00345', 'CHS-00678', 'Mitsubishi', 'Black',  'Pickup', 'Strada', 2021, 'N02-20-654321'),
+('DEF 3456', 'ENG-00567', 'CHS-00890', 'Ford',       'Blue',   'SUV',    'Everest',2022, 'P02-22-111222'),
+('GHI 7890', 'ENG-00901', 'CHS-00234', 'Suzuki',     'Red',    'Sedan',  'Ciaz',   2023, 'N03-19-333444');
 
 INSERT INTO driver_owns VALUES
 ('N01-23-456789', 'ABC 1234', 'ENG-00123', 'CHS-00456'),
@@ -162,7 +163,7 @@ INSERT INTO violation_type VALUES
 
 INSERT INTO registration_history VALUES
 ('REG-2024-001', '2024-01-15'),
-('REG-2024-001', '2025-01-15'),  -- added for testing history
+('REG-2024-001', '2025-01-15'),  
 ('REG-2024-055', '2024-04-10'),
 ('REG-2022-010', '2022-03-20'),
 ('REG-2024-099', '2024-07-01');
@@ -174,71 +175,64 @@ INSERT INTO registration_commits VALUES
 ('REG-2022-010', 4),
 ('REG-2024-099', 5);
 
+-- =========================================================================
+-- SPECIFICATION REPORTS (FIXED RUNTIME COMPLIANCE)
+-- =========================================================================
 
--- REPORTS TO BE GENERATED --
-
--- 1. 
+-- Report 1: Filtered Active Non-Professional Male Drivers
 SELECT * FROM driver
 WHERE license_type = 'Non-Professional'
     AND license_status = 'Active'
     AND sex = 'Male'
     AND (YEAR(CURDATE()) - YEAR(date_of_birth)) BETWEEN 18 AND 60;
 
-
--- 2.
-SELECT v.plate_number,v.make,v.model,v.color,v.year_of_manufacture
+-- Report 2: Find Vehicles owned by a Driver Driver License ID
+SELECT v.plate_number, v.make, v.model, v.color, v.year_of_manufacture
 FROM vehicle v
 JOIN driver_owns d 
-ON v.plate_number = d.plate_number
-AND v.engine_number = d.engine_number
-AND v.chassis_number = d.chassis_number
-WHERE d.license_number = 'N01-23-456789';       -- sample driver
+  ON v.plate_number = d.plate_number
+  AND v.engine_number = d.engine_number
+  AND v.chassis_number = d.chassis_number
+WHERE d.license_number = 'N01-23-456789';
 
--- 3. 
+-- Report 3: Find Vehicles with Expired Registrations
 SELECT v.plate_number, v.make, v.model, v.color, r.expiration_date
 FROM vehicle v 
+JOIN vehicle_has vh
+  ON v.plate_number = vh.plate_number
+  AND v.engine_number = vh.engine_number
+  AND v.chassis_number = vh.chassis_number
 JOIN registration r 
-ON v.registration_number = r.registration_number
+  ON vh.registration_number = r.registration_number
 WHERE r.expiration_date < '2025-01-01';
 
--- 4.
+-- Report 4: Driver Suspensions Checklist
 SELECT license_number, full_name, license_status, license_expiration
 FROM driver
 WHERE license_status = 'Suspended'
-OR license_expiration < CURRENT_DATE;
+   OR license_expiration < CURRENT_DATE;
 
--- 5.
-SELECT v.violation_id,
-       vt.violation_type,
-       v.violation_date,
-       v.violation_location,
-       v.violation_status,
-       v.fine_amount
+-- Report 5: Traffic Violations within Date Range
+SELECT v.violation_id, vt.violation_type, v.violation_date, v.violation_location, v.violation_status, v.fine_amount
 FROM violation v 
-JOIN violation_type vt 
-ON v.violation_id = vt.violation_id
+JOIN violation_type vt ON v.violation_id = vt.violation_id
 WHERE v.license_number = 'N01-23-456789'
-AND v.violation_date BETWEEN '2024-01-01' AND '2024-12-31';
+  AND v.violation_date BETWEEN '2024-01-01' AND '2024-12-31';
 
--- 6.
+-- Report 6: Total Violations Per Category
 SELECT vt.violation_type, COUNT(*) AS total_violations
 FROM violation v
 JOIN violation_type vt ON v.violation_id = vt.violation_id
-WHERE YEAR(v.violation_date) = 2024     -- Using 2024 since yung sample data is from 2024
+WHERE YEAR(v.violation_date) = 2024     
 GROUP BY vt.violation_type;
 
--- 7.
-SELECT v.plate_number,
-       v.make,
-       v.model,
-       v.color,
-       vi.violation_location,
-       vi.violation_date
+-- Report 7: Geographic Infraction Search Profile
+SELECT v.plate_number, v.make, v.model, v.color, vi.violation_location, vi.violation_date
 FROM involved_in i
 JOIN vehicle v
-ON i.plate_number = v.plate_number
-AND i.engine_number = v.engine_number
-AND i.chassis_number = v.chassis_number
+  ON i.plate_number = v.plate_number
+  AND i.engine_number = v.engine_number
+  AND i.chassis_number = v.chassis_number
 JOIN violation vi
-ON i.violation_id = vi.violation_id
+  ON i.violation_id = vi.violation_id
 WHERE vi.violation_location LIKE '%Pasig%';

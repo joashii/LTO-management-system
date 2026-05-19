@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import './DataTable.css';
 import Form from './Form.jsx';
-import { getDrivers, getVehicles, getRegistrations, getViolations } from '../api';
+import { 
+  getDrivers, getVehicles, getRegistrations, getViolations,
+  deleteDriver, deleteVehicle, deleteRegistration, deleteViolation 
+} from '../api';
 
 /* Data config */
 const FETCHERS = {
@@ -9,6 +12,22 @@ const FETCHERS = {
   vehicle: getVehicles,
   registration: getRegistrations,
   violation: getViolations,
+};
+
+// Maps the active tab to its respective backend delete function
+const DELETERS = {
+  driver: deleteDriver,
+  vehicle: deleteVehicle,
+  registration: deleteRegistration,
+  violation: deleteViolation,
+};
+
+// Maps the active tab to its primary key field in the database
+const KEY_FIELDS = {
+  driver: 'license_number',
+  vehicle: 'plate_number',
+  registration: 'registration_number',
+  violation: 'violation_id',
 };
 
 const COLUMNS = {
@@ -71,12 +90,15 @@ export default function DataTable({ table }) {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
   const [search, setSearch]   = useState('');
+  
+  // State to automatically trigger a data re-fetch after sequential deletions complete
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Form state
+  // Form states
   const [formMode, setFormMode] = useState(null); // 'add' | 'edit' | null
   const [editRow, setEditRow]   = useState(null); // row data for edit
 
-  // Fetch data when tab changes
+  // Fetch data when tab changes or refresh occurs
   useEffect(() => {
     setLoading(true);
     setSelected([]);
@@ -84,8 +106,6 @@ export default function DataTable({ table }) {
 
     FETCHERS[table]()
       .then(data => {
-        console.log(`${table} data:`, data);
-
         if (Array.isArray(data)) {
           setRows(data);
         } else {
@@ -101,30 +121,63 @@ export default function DataTable({ table }) {
         setLoading(false);
       });
 
-  }, [table]);
+  }, [table, refreshTrigger]);
 
-  // Filter rows based on search
+  // Filter rows based on search input
   const filteredRows = rows.filter(row =>
     cols.some(col =>
       String(row[col] ?? '').toLowerCase().includes(search.toLowerCase())
     )
   );
 
-  // Toggle a single row checkbox
+  // Toggle single row checkboxes
   const toggleRow = (i) =>
     setSelected(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
 
-  // Toggle all rows
+  // Toggle master header checkbox
   const toggleAll = () =>
     setSelected(prev => prev.length === filteredRows.length ? [] : filteredRows.map((_, i) => i));
 
   const allChecked = filteredRows.length > 0 && selected.length === filteredRows.length;
   const { title, sub } = SECTION_LABELS[table];
 
-  // Form open/close handlers
-  const openAdd    = ()    => { setEditRow(null); setFormMode('add');  };
-  const openEdit   = (row) => { setEditRow(row);  setFormMode('edit'); };
-  const closeForm  = ()    => setFormMode(null);
+  // Form setups
+  const openAdd    = () => { setEditRow(null); setFormMode('add'); };
+  const openEdit   = (row) => { setEditRow(row); setFormMode('edit'); };
+  const closeForm  = () => setFormMode(null);
+
+  // Triggered exclusively by the main toolbar delete button
+  const handleDeleteSelected = async () => {
+    if (selected.length === 0) {
+      alert('Please check the box next to at least one record you want to delete.');
+      return;
+    }
+
+    const confirmMsg = selected.length === 1 
+      ? 'Are you sure you want to permanently delete this selected record?' 
+      : `Are you sure you want to permanently delete these ${selected.length} selected records?`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const rowsToDelete = selected.map(index => filteredRows[index]);
+      const keyField = KEY_FIELDS[table];
+      const deleteFn = DELETERS[table];
+
+      // Execute sequential async deletions across chosen resources
+      for (const row of rowsToDelete) {
+        const id = row[keyField];
+        await deleteFn(id);
+      }
+
+      alert('Selected record(s) deleted successfully.');
+      setSelected([]);                     // Wipe array selections clean
+      setRefreshTrigger(prev => prev + 1); // Auto re-fire grid fetch lifecycle
+    } catch (err) {
+      console.error('Deletion operation error:', err);
+      alert(err.message || 'Failed to successfully delete selection records.');
+    }
+  };
 
   return (
     <>
@@ -136,7 +189,7 @@ export default function DataTable({ table }) {
             <span className="table-section-sub">{sub}</span>
           </div>
           <div className="table-toolbar-right">
-            {/* Search */}
+            {/* Search Input Group */}
             <div className="search-wrap">
               <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -150,19 +203,18 @@ export default function DataTable({ table }) {
               />
             </div>
 
-            {/* Add button */}
+            {/* Main Action Buttons */}
             <button className="btn-add" onClick={openAdd}>
               <IconAdd /> Add
             </button>
 
-            {/* Delete button */}
-            <button className="btn-delete">
+            <button className="btn-delete" onClick={handleDeleteSelected}>
               <IconDelete /> Delete
             </button>
           </div>
         </div>
 
-        {/* Table Content Section */}
+        {/* Dynamic Grid Layout */}
         {loading ? (
           <p className="table-loading">Loading records...</p>
         ) : (
@@ -216,6 +268,7 @@ export default function DataTable({ table }) {
                           </td>
                         );
                       })}
+                      {/* Cleaned Actions Column (No Row-Level Delete Button) */}
                       <td className="td-actions">
                         <button className="btn-edit" onClick={() => openEdit(row)}>
                           <IconEdit /> Edit
@@ -230,7 +283,7 @@ export default function DataTable({ table }) {
         )}
       </div>
 
-      {/* Form Overlay Sidepanel / Dialog Modals */}
+      {/* Side-Panel Modals */}
       {formMode && (
         <Form
           mode={formMode}

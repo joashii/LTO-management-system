@@ -20,10 +20,14 @@ import registrationRoutes from './registration/registration.router.js';
 import vehicleRoutes from './vehicle/vehicle.router.js';
 import violationRoutes from './violation/violation.router.js';
 
+import { getComprehensiveDriverProfile } from './driver/driver.controller.js';
+
 app.use('/api/drivers', driverRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/violations', violationRoutes);
+
+app.get('/api/profile/lookup', getComprehensiveDriverProfile);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend is up and running!' });

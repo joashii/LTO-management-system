@@ -3,7 +3,6 @@ import { getRegistrations, getRegistrationById, createRegistration, updateRegist
 const router = Router();
 
 router.get('/', getRegistrations);
-// Changed /:id to /:registration_number to match the controller parameter expectations
 router.get('/:registration_number', getRegistrationById);
 
 router.post('/', createRegistration);

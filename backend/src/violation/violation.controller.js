@@ -1,22 +1,16 @@
 import pool from '../pool.js';
 
+
+// GET ALL VIOLATIONS
 export const getViolations = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        // JOIN violation_type and combine date/location to match DataTable.jsx expected columns
-        const query = `
-            SELECT 
-                v.violation_id,
-                vt.violation_type AS violation_type,
-                CONCAT(v.violation_date, ' - ', v.violation_location) AS date_and_location,
-                v.apprehending_officer,
-                v.fine_amount,
-                v.violation_status
+        const violations = await conn.query(`
+            SELECT v.*, vt.violation_type 
             FROM violation v
-            JOIN violation_type vt ON v.violation_id = vt.violation_id
-        `;
-        const violations = await conn.query(query);
+            LEFT JOIN violation_type vt ON v.violation_id = vt.violation_id
+        `);
         res.status(200).json(violations);
     } catch (err) {
         console.error('Error fetching violations:', err);
@@ -24,15 +18,24 @@ export const getViolations = async (req, res) => {
     } finally {
         if (conn) conn.release();
     }
-}
+};
 
+
+// GET VIOLATION BY ID
 export const getViolationById = async (req, res) => {
+    const { id } = req.params;
     let conn;
     try {
         conn = await pool.getConnection();
-        const violation = await conn.query('SELECT * FROM violation WHERE violation_id = ?', [req.params.id]);
+        const violation = await conn.query(`
+            SELECT v.*, vt.violation_type 
+            FROM violation v
+            LEFT JOIN violation_type vt ON v.violation_id = vt.violation_id
+            WHERE v.violation_id = ?
+        `, [id]);
+        
         if (violation.length === 0) {
-            return res.status(404).json({ error: 'Violation not found' });
+            return res.status(404).json({ error: 'Violation profile not found' });
         }
         res.status(200).json(violation[0]);
     } catch (err) {
@@ -41,130 +44,128 @@ export const getViolationById = async (req, res) => {
     } finally {
         if (conn) conn.release();
     }
-}
+};
 
+
+// CREATE VIOLATION 
 export const createViolation = async (req, res) => {
-    const {
-        violation_id,
+    const { 
         violation_date, 
         violation_location, 
+        violation_type, 
+        fine_amount, 
+        apprehending_officer, 
         violation_status, 
-        fine_amount,
-        apprehending_officer,
-        license_number,
-        registration_number
+        license_number,       // The offending driver
+        registration_number   // The associated vehicle registration
     } = req.body;
-    let conn;
 
+    let conn;
+    try {
+        conn = await pool.getConnection();
+
+        const ownershipCheck = await conn.query(`
+            SELECT v.license_number AS actual_owner
+            FROM vehicle_has vh
+            JOIN vehicle v 
+              ON vh.plate_number = v.plate_number 
+             AND vh.engine_number = v.engine_number 
+             AND vh.chassis_number = v.chassis_number
+            WHERE vh.registration_number = ?
+        `, [registration_number]);
+
+        // If the registration exists but the owner doesn't match the offender
+        if (ownershipCheck.length === 0) {
+            return res.status(400).json({ 
+                error: `Validation Error: Registration number ${registration_number} could not be matched to any vehicle asset.` 
+            });
+        }
+
+        if (ownershipCheck[0].actual_owner !== license_number) {
+            return res.status(400).json({ 
+                error: `LTO Restriction: The selected driver (${license_number}) does not own the vehicle tied to registration ${registration_number}. You cannot issue this citation.` 
+            });
+        }
+
+        await conn.beginTransaction();
+
+        const result = await conn.query(`
+            INSERT INTO violation 
+            (violation_date, violation_location, violation_status, fine_amount, license_number, registration_number) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [violation_date, violation_location, violation_status, fine_amount, license_number, registration_number]);
+        
+        await conn.commit();
+        res.status(201).json({ success: true });
+
+    } catch (err) {
+        if (conn) await conn.rollback();
+        console.error('Error creating violation record:', err);
+        res.status(500).json({ success: false, error: 'Failed to record the traffic violation.' });
+    } finally {
+        if (conn) conn.release();
+    }
+};
+
+
+// UPDATE VIOLATION
+export const updateViolation = async (req, res) => {
+    const { id } = req.params;
+    const { violation_date, violation_location, violation_status, fine_amount, apprehending_officer } = req.body;
+    let conn;
     try {
         conn = await pool.getConnection();
         const result = await conn.query(
-            'INSERT INTO violation (violation_id, violation_date, violation_location, violation_status, fine_amount, apprehending_officer, license_number, registration_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [violation_id, violation_date, violation_location, violation_status, fine_amount, apprehending_officer, license_number, registration_number]
+            'UPDATE violation SET violation_date = ?, violation_location = ?, violation_status = ?, fine_amount = ?, apprehending_officer = ? WHERE violation_id = ?',
+            [violation_date, violation_location, violation_status, fine_amount, apprehending_officer, id]
         );
-        res.status(201).json({ id: result.insertId });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Violation record not found' });
+        }
+        res.status(200).json({ success: true });
     } catch (err) {
-        console.error('Error creating violation:', err);
-        res.status(500).json({ error: 'Failed to create violation' });
+        console.error('Error updating violation details:', err);
+        res.status(500).json({ success: false, error: 'Failed to update violation.' });
     } finally {
         if (conn) conn.release();
     }
-}
+};
 
-export const updateViolation = async (req, res) => {
-    const { 
-        violation_id,
-        violation_date, 
-        violation_location, 
-        violation_status, 
-        fine_amount,
-        apprehending_officer,
-        license_number,
-        registration_number
-    } = req.body;
-    let conn;
 
-    try {
-        conn = await pool.getConnection();
-        await conn.query(
-            'UPDATE violation SET violation_id = ?, violation_date = ?, violation_location = ?, violation_status = ?, fine_amount = ?, apprehending_officer = ?, license_number = ?, registration_number = ? WHERE violation_id = ?',
-            [violation_id, violation_date, violation_location, violation_status, fine_amount, apprehending_officer, license_number, registration_number, req.params.id]
-        );
-        res.status(200).json({ message: 'Violation updated' });
-    } catch (err) {
-        console.error('Error updating violation:', err);
-        res.status(500).json({ error: 'Failed to update violation' });
-    } finally {
-        if (conn) conn.release();
-    }
-}
-
+// DELETE VIOLATION
 export const deleteViolation = async (req, res) => {
+    const { violation_id } = req.params;
     let conn;
     try {
         conn = await pool.getConnection();
-        await conn.query('DELETE FROM violation WHERE violation_id = ?', [req.params.id]);
-        res.status(200).json({ message: 'Violation deleted' });
-    } catch (err) {
-        console.error('Error deleting violation:', err);
-        res.status(500).json({ error: 'Failed to delete violation' });
-    } finally {
-        if (conn) conn.release();
-    }
-}  
-
-// TODO : LINK TO CRUD FUNCTIONS
-
-// Link Violation with Vehicle PK
-export const involvedIn = async (violationId, plate_number, engine_number, chassis_number) => {
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        await conn.query(
-            'INSERT INTO involved_in (violation_id, plate_number, engine_number, chassis_number) VALUES (?, ?, ?, ?)',
-            [violationId, plate_number, engine_number, chassis_number]
+        
+        // 1. PROACTIVE CHECK: Is the violation unpaid?
+        const rows = await conn.query(
+            "SELECT violation_status FROM violation WHERE violation_id = ?", 
+            [violation_id]
         );
+        
+        if (rows.length > 0) {
+            const status = Array.isArray(rows) ? rows[0].violation_status : rows.violation_status;
+            if (status === 'Unpaid') {
+                return res.status(400).json({ 
+                    error: 'Cannot delete an Unpaid violation. The fine must be marked as Paid or Contested first.' 
+                });
+            }
+        }
+
+        // 2. Proceed to delete if Paid
+        const result = await conn.query('DELETE FROM violation WHERE violation_id = ?', [violation_id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Violation record not found' });
+        }
+        res.status(200).json({ message: 'Violation record dropped successfully' });
+
     } catch (err) {
-        console.error('Error linking violation with vehicle:', err);
-        throw err;
+        console.error('SQL Error deleting violation:', err);
+        res.status(500).json({ error: 'Internal failure processing citation deletion.' });
     } finally {
         if (conn) conn.release();
     }
-}
-
-
-// link different types of violations with one violation ID
-export const violationType = async (violationId, violationTypes) => {
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        for (const type of violationTypes) {
-            await conn.query(
-                'INSERT INTO violation_type (violation_id, type) VALUES (?, ?)',
-                [violationId, type]
-            );
-        } 
-    } catch (err) {
-        console.error('Error linking violation with types:', err);
-        throw err;
-    } finally {
-        if (conn) conn.release();
-    }
-}
-
-// link violation with registration number
-export const registrationCommits = async (violationId, registrationNumber) => {
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        await conn.query(
-            'INSERT INTO registration_commits (violation_id, registration_number) VALUES (?, ?)',
-            [violationId, registrationNumber]
-        );
-    } catch (err) {
-        console.error('Error linking violation with registration:', err);
-        throw err;
-    } finally {
-        if (conn) conn.release();
-    }
-}
+};

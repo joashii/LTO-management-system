@@ -95,22 +95,53 @@ export const updateDriver = async (req, res) => {
 }
 
 export const deleteDriver = async (req, res) => {
-    const { license_number} = req.params;
+    const { license_number } = req.params;
     let conn;
     try {
         conn = await pool.getConnection();
-        const result = await conn.query('DELETE FROM driver WHERE license_number = ?', [license_number]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Driver not found' });
+
+        // check, does this driver have unpaid fines?
+        const rowsUnpaid = await conn.query(
+            "SELECT COUNT(*) as count FROM violation WHERE license_number = ? AND violation_status = 'Unpaid'", 
+            [license_number]
+        );
+        // MariaDB returns arrays of objects. Depending on your driver, it's either rowsUnpaid[0] or rowsUnpaid.
+        const unpaidCount = Array.isArray(rowsUnpaid) ? rowsUnpaid[0].count : rowsUnpaid.count;
+        
+        if (unpaidCount > 0) {
+            return res.status(400).json({ 
+                error: `Cannot delete driver. They have ${unpaidCount} unpaid violation(s).` 
+            });
         }
-        res.status(200).json({ success: true });
+
+        // check, does this driver still own registered vehicles?
+        const rowsVehicles = await conn.query(
+            "SELECT COUNT(*) as count FROM vehicle WHERE license_number = ?", 
+            [license_number]
+        );
+        const vehicleCount = Array.isArray(rowsVehicles) ? rowsVehicles[0].count : rowsVehicles.count;
+
+        if (vehicleCount > 0) {
+            return res.status(400).json({ 
+                error: `Cannot delete driver. They still own ${vehicleCount} vehicle(s) in the system.` 
+            });
+        }
+
+        // If checks pass, delete the driver
+        const result = await conn.query('DELETE FROM driver WHERE license_number = ?', [license_number]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Driver profile not found' });
+        }
+        res.status(200).json({ message: 'Driver record deleted successfully' });
+
     } catch (err) {
-        console.error('Error deleting driver:', err);
-        res.status(500).json({ success: false, error: 'Failed to delete driver' });
+        console.error('SQL Error deleting driver:', err);
+        res.status(500).json({ error: 'Internal server error while deleting driver.' });
     } finally {
         if (conn) conn.release();
     }
-}
+};
 
 // Link license number, to Vehicle PK
 // If driver is deleted/updated....
@@ -129,3 +160,71 @@ export const driverOwns = async (license_number, plate_number, engine_number, ch
     }
 
 }
+
+export const getComprehensiveDriverProfile = async (req, res) => {
+    const { query } = req.query; // This will accept either full_name search or exact license_number
+    
+    if (!query) {
+        return res.status(400).json({ error: 'Search query parameter is required.' });
+    }
+
+    let conn;
+    try {
+        conn = await pool.getConnection();
+
+        // Locate the core driver record
+        const drivers = await conn.query(`
+            SELECT * FROM driver 
+            WHERE license_number = ? OR full_name LIKE ?
+        `, [query, `%${query}%`]);
+
+        if (drivers.length === 0) {
+            return res.status(404).json({ error: 'No matching driver registry found.' });
+        }
+
+        // We will target the first matched driver profile
+        const targetDriver = drivers[0];
+        const licenseNo = targetDriver.license_number;
+
+        // Extract all vehicle configurations owned by this driver, 
+        const vehicles = await conn.query(`
+            SELECT v.*, vh.registration_number, r.registration_status, r.registration_date, r.expiration_date
+            FROM vehicle v
+            LEFT JOIN vehicle_has vh 
+              ON v.plate_number = vh.plate_number 
+             AND v.engine_number = vh.engine_number 
+             AND v.chassis_number = vh.chassis_number
+            LEFT JOIN registration r 
+              ON vh.registration_number = r.registration_number
+            WHERE v.license_number = ?
+        `, [licenseNo]);
+
+        const violations = await conn.query(`
+            SELECT * FROM violation 
+            WHERE license_number = ?
+            ORDER BY violation_date DESC
+        `, [licenseNo]);
+
+        const balanceSummary = await conn.query(`
+            SELECT SUM(fine_amount) AS total_unpaid 
+            FROM violation 
+            WHERE license_number = ? AND violation_status = 'Unpaid'
+        `, [licenseNo]);
+
+        res.status(200).json({
+          driverInfo: targetDriver,
+          vehicles: vehicles,
+          violations: violations,
+          summary: {
+            unpaidFines: balanceSummary[0].total_unpaid || 0,
+            totalCount: violations.length
+          }
+        });
+
+    } catch (err) {
+        console.error('Master Profile Aggregation Error:', err);
+        res.status(500).json({ error: 'Internal failure compiling comprehensive asset profile.' });
+    } finally {
+        if (conn) conn.release();
+    }
+};
