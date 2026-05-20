@@ -301,7 +301,7 @@ export default function Form({ mode, table, initialData, onClose, onRefresh }) {
                   </div>
                   <div className="form-group full-width">
                     <label>Home Address *</label>
-                    <input type="text" name="address" placeholder="e.g., 123 Rizal St., Manila" value={formData.address || ''} onChange={handleChange} required />
+                    <input type="text" name="driver_address" placeholder="e.g., 123 Rizal St., Manila" value={formData.driver_address || ''} onChange={handleChange} required />
                   </div>
                 </>
               )}

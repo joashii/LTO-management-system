@@ -34,7 +34,7 @@ const COLUMNS = {
   driver: ['license_number', 'full_name', 'sex', 'date_of_birth', 'license_type', 'license_status', 'license_expiration', 'driver_address'],
   vehicle: ['plate_number', 'make', 'model', 'year_of_manufacture', 'color', 'vehicle_type', 'engine_number', 'chassis_number'],
   registration: ['registration_number', 'registration_date', 'expiration_date', 'registration_status'],
-  violation: ['violation_id', 'violation_type', 'violation_date', 'violation_location', 'apprehending_officer', 'fine_amount', 'violation_status'],
+  violation: ['violation_id', 'violation_date', 'violation_location', 'violation_status', 'fine_amount', 'apprehending_officer', 'violation_type'],
 };
 
 const LABELS = {

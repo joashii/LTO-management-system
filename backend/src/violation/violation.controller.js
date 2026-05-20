@@ -89,14 +89,28 @@ export const createViolation = async (req, res) => {
 
         await conn.beginTransaction();
 
+        // 1. Insert into core violation table (Using your schema column name: officer_name)
         const result = await conn.query(`
             INSERT INTO violation 
-            (violation_date, violation_location, violation_status, fine_amount, license_number, registration_number) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [violation_date, violation_location, violation_status, fine_amount, license_number, registration_number]);
+            (violation_date, violation_location, violation_status, fine_amount, officer_name, license_number, registration_number) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [violation_date, violation_location, violation_status, fine_amount, apprehending_officer, license_number, registration_number]);
+        
+        // 2. Extract the newly generated auto-incremented primary key ID
+        // Note: Depending on your specific mysql driver library type (like 'mysql2'), 
+        // the generated ID might be contained in result.insertId or result[0].insertId.
+        const newViolationId = result.insertId || (result[0] && result[0].insertId);
+
+        // 3. Insert the relational row into the violation_type bridge table
+        if (violation_type && newViolationId) {
+            await conn.query(`
+                INSERT INTO violation_type (violation_id, violation_type) 
+                VALUES (?, ?)
+            `, [newViolationId, violation_type]);
+        }
         
         await conn.commit();
-        res.status(201).json({ success: true });
+        res.status(201).json({ success: true, violation_id: newViolationId });
 
     } catch (err) {
         if (conn) await conn.rollback();
@@ -106,8 +120,6 @@ export const createViolation = async (req, res) => {
         if (conn) conn.release();
     }
 };
-
-
 // UPDATE VIOLATION
 export const updateViolation = async (req, res) => {
     const { id } = req.params;

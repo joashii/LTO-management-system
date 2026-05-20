@@ -101,6 +101,7 @@ CREATE TABLE registration_commits (
 );
 
 
+
 -- SEED DATA 
 
 INSERT INTO driver VALUES
